@@ -1148,7 +1148,7 @@ function scrPlantas() {
   <input class="search" placeholder="Buscar planta..." value="${esc(plantSearch)}" oninput="J.setSearch(this.value)">
   <div class="filters">${fl.map(f=>`<div class="fil ${plantFilter===f[0]?'on':''}" onclick="J.setFilter('${f[0]}')">${f[1]}</div>`).join('')}</div>${(function(){var locs=Array.from(new Set(state.plants.map(p=>p.location||'Sin ubicación')));return locs.length>1?`<div class="filters" style="margin-top:-2px">${[['','Todas las ubicaciones']].concat(locs.map(function(l){return [l,l]})).map(function(f){return `<div class="fil ${plantLoc===f[0]?'on':''}" onclick="J.setLoc('${encodeURIComponent(f[0])}')">${ic('pin',12)} ${esc(f[1])}</div>`
 }).join('')
-} < /div>`:''})()}${body}`}
+} </div>`:''})()}${body}`}
 
 function setSearch(v) {
   plantSearch = v;
@@ -2596,7 +2596,7 @@ function admCombos() {
   <button class="btn btn-primary btn-block" onclick="J.admAddCombo()">${ic('camera',16)} Subir imagen del combo</button><div class="group-h line">Combos guardados · ${existing.length}</div>
   ${existing.map(k=>{const[pt,pl]=k.split('|');const pn=(pots.find(x=>x.id===pt)||{}).name||pt,ln=(plants.find(x=>x.id===pl)||{}).name||pl;return ` < div class = "adm-item" > < div class = "pic" > $ {
     miniImg(state.combos[k])
-  } < /div><div style="flex:1"><b style="font-size:13px">${esc(ln)} + ${esc(pn)}</b > < /div><span class="icon-btn" onclick="J.admDelCombo('${k}')">${ic('trash',18)}</span > < /div>`}).join('')||'<div class="mini">Sin combos aún.</div > '}`}
+  } </div><div style="flex:1"><b style="font-size:13px">${esc(ln)} + ${esc(pn)}</b > </div><span class="icon-btn" onclick="J.admDelCombo('${k}')">${ic('trash',18)}</span > </div>`}).join('')||'<div class="mini">Sin combos aún.</div > '}`}
 
   function admAddCombo() {
     const pot = $('#cb_pot').value,
