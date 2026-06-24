@@ -321,11 +321,21 @@ function freshState(){return {v:5,profile:{name:"Mi jardín",lang:"es",points:0,
   plants:[],tasks:[],incubator:[],cemetery:[],inventory:{macetas:[],plantas:[],fondos:[],marcos:[]},icons:[],shop:defaultShop(),combos:Object.assign({},CATALOG.combos||{}),counters:{waterTotal:0,promoTotal:0,legendaryTotal:0},
   theme:{logo:null,baseIcon:null,incEsqueje:null,incSemilla:null,appName:"Josie",colors:{},fonts:{logo:"",head:"",body:""},customFonts:{},
     text:{logo:{color:"",bold:false,italic:true},head:{color:"",bold:true,italic:false},body:{color:"",bold:false,italic:false}}},log:[]}}
-function load(){try{const r=localStorage.getItem('josie_v5');if(r){state=JSON.parse(r);migrate();return}}catch(e){}
-  try{const old=localStorage.getItem('josie_v4');if(old){state=JSON.parse(old);state.v=5;if(!state.theme.text)state.theme.text=freshState().theme.text;migrate();return}}catch(e){}
+/* ===== Persistencia robusta: IndexedDB (gran capacidad) + recuperacion desde localStorage ===== */
+const DB_NAME='josie_db',DB_STORE='kv',DB_KEY='state';let _idb=null,_idbDead=false;
+function idbOpen(){return new Promise((res,rej)=>{if(_idb)return res(_idb);if(_idbDead)return rej(new Error('no-idb'));let req;try{req=indexedDB.open(DB_NAME,1)}catch(e){_idbDead=true;return rej(e)}req.onupgradeneeded=e=>{const db=e.target.result;if(!db.objectStoreNames.contains(DB_STORE))db.createObjectStore(DB_STORE)};req.onsuccess=e=>{_idb=e.target.result;_idb.onversionchange=()=>{try{_idb.close()}catch(_){}_idb=null};res(_idb)};req.onerror=()=>{_idbDead=true;rej(req.error||new Error('idb'))}})}
+function idbGet(k){return idbOpen().then(db=>new Promise((res,rej)=>{const r=db.transaction(DB_STORE,'readonly').objectStore(DB_STORE).get(k);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}))}
+function idbSet(k,v){return idbOpen().then(db=>new Promise((res,rej)=>{const tx=db.transaction(DB_STORE,'readwrite');tx.objectStore(DB_STORE).put(v,k);tx.oncomplete=()=>res(true);tx.onerror=()=>rej(tx.error||new Error('idb-write'));tx.onabort=()=>rej(tx.error||new Error('idb-abort'))}))}
+function persistNow(){return idbSet(DB_KEY,state)}
+async function load(){
+  try{const v=await idbGet(DB_KEY);if(v&&typeof v==='object'&&Array.isArray(v.plants)){state=v;migrate();return}}catch(e){}
+  try{const r=localStorage.getItem('josie_v5');if(r){state=JSON.parse(r);migrate();try{await persistNow();localStorage.removeItem('josie_v5')}catch(e){}return}}catch(e){}
+  try{const old=localStorage.getItem('josie_v4');if(old){state=JSON.parse(old);state.v=5;migrate();try{await persistNow();localStorage.removeItem('josie_v4')}catch(e){}return}}catch(e){}
   state=freshState()}
 function migrate(){if(!state.icons)state.icons=[];if(!state.counters)state.counters={waterTotal:0,promoTotal:0,legendaryTotal:0};if(state.counters.legendaryTotal==null)state.counters.legendaryTotal=0;state.plants.forEach(p=>{if(!p.waterLog)p.waterLog=p.lastWater?[p.lastWater]:[];if(!p.iconId)p.iconId="base";if(p.legendaryCount==null)p.legendaryCount=(p.legendaryClaimed?1:0)});const _ft=freshState().theme;state.theme=state.theme||{};["logo","baseIcon","incEsqueje","incSemilla","appName","colors","fonts","customFonts","text"].forEach(k=>{if(state.theme[k]==null)state.theme[k]=_ft[k]});if(typeof state.theme.fonts!=="object")state.theme.fonts=_ft.fonts;if(typeof state.theme.colors!=="object")state.theme.colors=_ft.colors;if(typeof state.theme.text!=="object")state.theme.text=_ft.text;if(!state.profile.lang)state.profile.lang="es"}
-function save(){try{localStorage.setItem('josie_v5',JSON.stringify(state))}catch(e){}}
+let _saving=false,_pendingSave=false,_quotaWarned=false;
+function save(){if(_saving){_pendingSave=true;return}_saving=true;persistNow().then(()=>{_quotaWarned=false;_saving=false;if(_pendingSave){_pendingSave=false;save()}}).catch(()=>{_saving=false;let ok=false;try{localStorage.setItem('josie_v5',JSON.stringify(state));ok=true}catch(e){}if(!ok&&!_quotaWarned){_quotaWarned=true;try{toast("No se pudo guardar. Descarga ya una copia de seguridad.","bad")}catch(e){}}if(_pendingSave){_pendingSave=false;save()}})}
+try{addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')save()});addEventListener('pagehide',()=>{save()})}catch(e){}
 
 const $=s=>document.querySelector(s);
 const uid=()=>Math.random().toString(36).slice(2,9);
@@ -877,13 +887,13 @@ function importBackup(){pickFile(d=>{
 const J={show,quickAdd,waterAll,openPlant,toggleFav,plantMenu,setFilter,setSearch,fichaTabSet,openPlantForm,savePlant,water,setWater,fert,setFert,transplant,cleanPlant,review,toggleFlower,toggleTag,toggleSympt,setNotes,setPhase,killPlant,confirmKill,deletePlant,addPhoto,removePhoto,openIconPicker,setPlantIcon,uploadIcon,delIcon,setTransplant,setClean,renderFicha,toggleTask,deleteTask,openTaskForm,saveTask,openInc,setIncStage,setIncRoot,promote,incDie,incDelete,openIncForm,pickIncType,saveInc,setShopCat,buy,openGrave,restoreGrave,removeGrave,openGraveForm,saveGrave,changeAvatar,setName,addLoc,renameLoc,delLoc,resetAll,installHelp,closeModal,closeModal2,_cyRun,_isubRun,adminCheck,admSecSet,admCatSet,admEditItem,admToggle,admDelItem,admReplaceImg,admAddItem,admAddCombo,admDelCombo,admIncIcon,admResetInc,admColor,admColorReset,admFont,admText,admUploadFont,admLogo,admLogoReset,admAppName,admBase,setLang,exportBackup,importBackup,setLoc};
 let undoStack=[];
 function refreshUndo(){const u=$('#undoPill');if(!u)return;if(undoStack.length){u.style.display='';u.innerHTML=ic('undo',15)+'<span>Deshacer</span>'}else u.style.display='none'}
-function pushUndo(){try{undoStack.push(JSON.stringify(state));if(undoStack.length>50)undoStack.shift()}catch(e){}refreshUndo()}
+function pushUndo(){try{undoStack.push(JSON.stringify(state));if(undoStack.length>12)undoStack.shift()}catch(e){}refreshUndo()}
 function undo(){if(!undoStack.length){toast("Nada que deshacer","bad");return}let prev;try{prev=undoStack.pop();state=JSON.parse(prev);migrate();save()}catch(e){return}const ov=$('#overlay').classList.contains('on');if(ov&&_lastFichaId&&state.plants.find(p=>p.id===_lastFichaId)){renderFicha(_lastFichaId)}else{if(ov)closeModal();show(current)}refreshUndo();toast("Acción deshecha")}
 ['water','setWater','fert','setFert','transplant','setTransplant','cleanPlant','setClean','review','toggleFlower','toggleTag','toggleSympt','setPhase','savePlant','confirmKill','deletePlant','promote','setPlantIcon','uploadIcon','delIcon','toggleFav','addPhoto','removePhoto'].forEach(function(nm){var o=J[nm];if(typeof o==='function')J[nm]=function(){pushUndo();return o.apply(this,arguments)}});
 J.undo=undo;
 window.J=J;
 $('#logoTap').addEventListener('click',logoTapped);
-load();applyTheme();setupInstall();dailyLogin();syncHeader();show('inicio');initLang();
+(async function(){try{await load()}catch(e){}if(!state)state=freshState();applyTheme();setupInstall();dailyLogin();syncHeader();show('inicio');initLang();})();
 </script>
 </body>
 </html>
