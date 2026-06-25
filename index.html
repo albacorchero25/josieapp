@@ -233,7 +233,20 @@ input,select,textarea{font-family:var(--font-body);font-size:14.5px;color:var(--
 .hero-card{padding:18px}
 .statpill{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:800;padding:5px 12px;border-radius:22px}
 .statpill.good{background:rgba(107,168,140,.18);color:var(--good)}.statpill.warn{background:rgba(201,154,92,.2);color:var(--warn)}.statpill.bad{background:rgba(199,126,150,.18);color:var(--bad)}
-.sheet-x{position:absolute;top:13px;right:15px;width:34px;height:34px;border-radius:50%;border:none;background:rgba(120,87,196,.10);color:var(--accent3);display:grid;place-items:center;cursor:pointer;z-index:6;padding:0}.sheet-x:active{transform:scale(.92)}.modal{max-height:90vh;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;position:relative;padding-top:30px}.modal-sm{max-height:88vh;overflow-y:auto}.modal-grab{cursor:grab}</style>
+.sheet-x{position:absolute;top:13px;right:15px;width:34px;height:34px;border-radius:50%;border:none;background:rgba(120,87,196,.10);color:var(--accent3);display:grid;place-items:center;cursor:pointer;z-index:6;padding:0}.sheet-x:active{transform:scale(.92)}.modal{max-height:90vh;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;position:relative;padding-top:30px}.modal-sm{max-height:88vh;overflow-y:auto}.modal-grab{cursor:grab}
+.plant-card{position:relative;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.plant-card.sel{outline:2.5px solid var(--accent3);outline-offset:-2px;background:rgba(120,87,196,.08)}
+.pc-check{position:absolute;top:13px;right:15px;width:26px;height:26px;border-radius:50%;border:2px solid var(--accent3);background:#fff;display:grid;place-items:center;color:transparent;z-index:6}
+.pc-check.on{background:var(--accent3);color:#fff;border-color:var(--accent3)}
+.selbar-spacer{height:160px}
+.selbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom));width:min(440px,calc(100% - 24px));z-index:120;background:rgba(255,255,255,.98);backdrop-filter:blur(10px);border-radius:24px;box-shadow:0 16px 44px rgba(45,34,70,.22);padding:12px 14px;border:1px solid var(--line)}
+.selbar-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.selbar-x{width:34px;height:34px;border:none;border-radius:50%;background:rgba(120,87,196,.10);color:var(--accent3);display:grid;place-items:center;cursor:pointer;padding:0}
+.selbar-x:active{transform:scale(.92)}
+.selbar-count{flex:1;font-weight:800;color:var(--accent3);font-size:14.5px}
+.selbar-actions{display:flex;gap:8px}
+.selbar-act{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;border:none;background:rgba(120,87,196,.08);color:var(--accent3);border-radius:16px;padding:11px 4px;cursor:pointer;font-weight:700;font-size:11.5px}
+.selbar-act:active{transform:scale(.94)}</style>
 </head>
 <body>
 <div id="phone">
@@ -961,6 +974,10 @@ function renderNav() {
 }
 
 function show(k, dir) {
+  if (selMode && k !== 'plantas') {
+    selMode = false;
+    selSet.clear()
+  }
   current = k;
   renderNav();
   const s = $('#screen');
@@ -1119,6 +1136,144 @@ let plantFilter = "todas",
   plantSearch = "",
   plantLoc = "";
 
+/* ===== Selección múltiple (estilo galería) ===== */
+let selMode = false,
+  selSet = new Set(),
+  _holdTimer = null,
+  _suppressTap = false,
+  _visPlantIds = [];
+
+function cardTap(id) {
+  if (_suppressTap) {
+    _suppressTap = false;
+    return
+  }
+  if (selMode) toggleSel(id);
+  else openPlant(id)
+}
+
+function cardHoldStart(id) {
+  clearTimeout(_holdTimer);
+  _holdTimer = setTimeout(function() {
+    _suppressTap = true;
+    if (!selMode) selMode = true;
+    selSet.add(id);
+    if (navigator.vibrate) try {
+      navigator.vibrate(15)
+    } catch (e) {}
+    scrPlantas();
+    setTimeout(function() {
+      _suppressTap = false
+    }, 500)
+  }, 420)
+}
+
+function cardHoldEnd() {
+  clearTimeout(_holdTimer)
+}
+
+function toggleSel(id) {
+  if (selSet.has(id)) selSet.delete(id);
+  else selSet.add(id);
+  if (selSet.size === 0) {
+    exitSel();
+    return
+  }
+  scrPlantas()
+}
+
+function enterSel() {
+  selMode = true;
+  scrPlantas()
+}
+
+function exitSel() {
+  selMode = false;
+  selSet.clear();
+  _suppressTap = false;
+  scrPlantas()
+}
+
+function selectAllVisible() {
+  if (_visPlantIds.every(id => selSet.has(id))) _visPlantIds.forEach(id => selSet.delete(id));
+  else _visPlantIds.forEach(id => selSet.add(id));
+  if (selSet.size === 0) {
+    exitSel();
+    return
+  }
+  scrPlantas()
+}
+
+function batch(kind) {
+  const ids = [...selSet];
+  if (!ids.length) {
+    toast("No has seleccionado nada", "bad");
+    return
+  }
+  const t = today();
+  let n = 0;
+  ids.forEach(id => {
+    const p = state.plants.find(x => x.id === id);
+    if (!p) return;
+    n++;
+    if (kind === 'water') {
+      p.lastWater = t;
+      logWater(p, t);
+      state.counters.waterTotal++
+    } else if (kind === 'fert') {
+      p.lastFert = t
+    } else if (kind === 'review') {
+      p.lastReview = t
+    } else if (kind === 'transplant') {
+      p.lastTransplant = t
+    }
+  });
+  let xp = 0;
+  if (kind === 'water') xp = PTS.regar * n;
+  else if (kind === 'fert') xp = PTS.abonar * n;
+  const lbl = {
+    water: 'Regar',
+    fert: 'Abonar',
+    review: 'Revisar',
+    transplant: 'Trasplantar'
+  } [kind];
+  if (xp) {
+    state.profile.xp += xp;
+    state.log.unshift({
+      t: lbl + ' (×' + n + ')',
+      n: xp,
+      d: Date.now()
+    });
+    state.log = state.log.slice(0, 40);
+    checkLevel();
+    syncHeader()
+  }
+  recomputeBadges();
+  save();
+  const done = {
+    water: 'regadas',
+    fert: 'abonadas',
+    review: 'revisadas',
+    transplant: 'trasplantadas'
+  } [kind];
+  selMode = false;
+  selSet.clear();
+  scrPlantas();
+  toast(n + ' ' + done + (xp ? (' · +' + xp + ' XP') : ''), xp ? 'pts' : '')
+}
+
+function selToolbar() {
+  if (selMode || !state.plants.length) return '';
+  return `<div style="display:flex;justify-content:flex-end;margin:-2px 0 10px"><button class="btn btn-soft btn-sm" onclick="J.enterSel()">${ic('check',15)} Seleccionar varias</button></div>`
+}
+
+function selBar() {
+  if (!selMode) return '';
+  const n = selSet.size;
+  const allSel = _visPlantIds.length > 0 && _visPlantIds.every(id => selSet.has(id));
+  return `<div class="selbar-spacer"></div><div class="selbar"><div class="selbar-top"><button class="selbar-x" onclick="J.exitSel()">${ic('ban',18)}</button><div class="selbar-count">${n} seleccionada${n===1?'':'s'}</div><button class="btn btn-ghost btn-sm" onclick="J.selectAllVisible()">${allSel?'Ninguna':'Todas'}</button></div><div class="selbar-actions"><button class="selbar-act" onclick="J.batch('water')">${ic('water',20)}<span>Regar</span></button><button class="selbar-act" onclick="J.batch('fert')">${ic('fert',20)}<span>Abonar</span></button><button class="selbar-act" onclick="J.batch('review')">${ic('eye',20)}<span>Revisar</span></button><button class="selbar-act" onclick="J.batch('transplant')">${ic('pot',20)}<span>Trasplantar</span></button></div></div>`
+}
+
 function scrPlantas() {
   let P = state.plants.slice();
   if (plantSearch) P = P.filter(p => (p.name || '').toLowerCase().includes(plantSearch.toLowerCase()));
@@ -1129,6 +1284,10 @@ function scrPlantas() {
   if (plantFilter === 'sinrevhoy') P = P.filter(p => !isRevToday(p));
   if (plantFilter === 'venta') P = P.filter(p => p.forSale);
   if (plantLoc) P = P.filter(p => (p.location || 'Sin ubicación') === plantLoc);
+  _visPlantIds = P.map(p => p.id);
+  if (selSet.size) selSet.forEach(id => {
+    if (!state.plants.some(p => p.id === id)) selSet.delete(id)
+  });
   const g = {};
   P.forEach(p => {
     const l = p.location || 'Sin ubicación';
@@ -1148,7 +1307,7 @@ function scrPlantas() {
   <input class="search" placeholder="Buscar planta..." value="${esc(plantSearch)}" oninput="J.setSearch(this.value)">
   <div class="filters">${fl.map(f=>`<div class="fil ${plantFilter===f[0]?'on':''}" onclick="J.setFilter('${f[0]}')">${f[1]}</div>`).join('')}</div>${(function(){var locs=Array.from(new Set(state.plants.map(p=>p.location||'Sin ubicación')));return locs.length>1?`<div class="filters" style="margin-top:-2px">${[['','Todas las ubicaciones']].concat(locs.map(function(l){return [l,l]})).map(function(f){return `<div class="fil ${plantLoc===f[0]?'on':''}" onclick="J.setLoc('${encodeURIComponent(f[0])}')">${ic('pin',12)} ${esc(f[1])}</div>`
 }).join('')
-} </div>`:''})()}${body}`}
+} </div>`:''})()}${selToolbar()}${body}${selBar()}`}
 
 function setSearch(v) {
   plantSearch = v;
@@ -1179,9 +1338,9 @@ function setLoc(v) {
 function plantCard(p) {
   const h = plantHealth(p),
     rev = daysSince(p.lastReview);
-  return `<div class="card plant-card" onclick="J.openPlant('${p.id}')"><div class="pc-actions">
+  return `<div class="card plant-card${selMode&&selSet.has(p.id)?' sel':''}" onclick="J.cardTap('${p.id}')" ontouchstart="J.cardHoldStart('${p.id}')" ontouchmove="J.cardHoldEnd()" ontouchend="J.cardHoldEnd()" onmousedown="J.cardHoldStart('${p.id}')" onmouseup="J.cardHoldEnd()" onmouseleave="J.cardHoldEnd()" oncontextmenu="return false">${selMode?`<div class="pc-check${selSet.has(p.id)?' on':''}">${ic('check',15)}</div>`:`<div class="pc-actions">
       <span class="${p.favorite?'fav-on':''}" onclick="event.stopPropagation();J.toggleFav('${p.id}')">${ic('star',18,p.favorite?'fill':'')}</span>
-      <span onclick="event.stopPropagation();J.plantMenu('${p.id}')">${ic('dots',18)}</span></div>
+      <span onclick="event.stopPropagation();J.plantMenu('${p.id}')">${ic('dots',18)}</span></div>`}
     <div class="pic">${iconHTML(p,64)}</div>
     <div class="pc-body"><div class="pc-name">${esc(p.name||'Sin nombre')} ${p.stage==='legendaria'?`<span class="chip gold">${ic('crown',12)}</span>`:''}${p.fromProp?`<span class="chip">${ic(p.fromProp==='esqueje'?'scissors':'seed',11)} ${p.fromProp==='esqueje'?'Esqueje':'Semilla'}</span>`:''}</div>
       <div class="pc-meta"><span>${ic('water',13)} ${relDay(p.lastWater)}</span>${p.location?`<span>${ic('pin',12)} ${esc(p.location)}</span>`:''}</div>
@@ -2155,7 +2314,7 @@ function scrPerfil() {
   <button class="btn btn-soft btn-block" style="margin-bottom:14px" onclick="J.importBackup()">${ic('refresh',16)} Restaurar copia de seguridad</button>
   <button class="btn btn-soft btn-block" style="margin-bottom:8px" onclick="J.installHelp()">${ic('plus',16)} Cómo instalar en el móvil</button>
   <button class="btn btn-ghost btn-block" onclick="J.resetAll()" style="color:var(--bad)">${ic('trash',16)} Reiniciar todos los datos</button>
-  <div class="mini" style="text-align:center;margin-top:14px;opacity:.6">Josie · versión 6 (lista corregida) · toca el logo 5 veces para ajustes</div>`
+  <div class="mini" style="text-align:center;margin-top:14px;opacity:.6">Josie · versión 7 (selección múltiple) · toca el logo 5 veces para ajustes</div>`
 }
 
 function changeAvatar() {
@@ -3364,7 +3523,15 @@ function admCombos() {
     delSympt,
     addTag,
     renameTag,
-    delTag
+    delTag,
+    cardTap,
+    cardHoldStart,
+    cardHoldEnd,
+    toggleSel,
+    enterSel,
+    exitSel,
+    selectAllVisible,
+    batch
   };
   let undoStack = [];
 
@@ -3409,7 +3576,7 @@ function admCombos() {
     refreshUndo();
     toast("Acción deshecha")
   }
-  ['water', 'setWater', 'fert', 'setFert', 'transplant', 'setTransplant', 'cleanPlant', 'setClean', 'review', 'unreview', 'toggleFlower', 'toggleTag', 'toggleSympt', 'toggleSymptAt', 'toggleSale', 'setSubstrate', 'setPhase', 'savePlant', 'confirmKill', 'deletePlant', 'promote', 'setPlantIcon', 'uploadIcon', 'delIcon', 'toggleFav', 'addPhoto', 'removePhoto', 'incPhoto', 'incRemovePhoto', 'setIncSub'].forEach(function(nm) {
+  ['water', 'setWater', 'fert', 'setFert', 'transplant', 'setTransplant', 'cleanPlant', 'setClean', 'review', 'unreview', 'toggleFlower', 'toggleTag', 'toggleSympt', 'toggleSymptAt', 'toggleSale', 'setSubstrate', 'setPhase', 'savePlant', 'confirmKill', 'deletePlant', 'promote', 'setPlantIcon', 'uploadIcon', 'delIcon', 'toggleFav', 'addPhoto', 'removePhoto', 'incPhoto', 'incRemovePhoto', 'setIncSub', 'batch'].forEach(function(nm) {
     var o = J[nm];
     if (typeof o === 'function') J[nm] = function() {
       pushUndo();
