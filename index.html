@@ -244,9 +244,10 @@ input,select,textarea{font-family:var(--font-body);font-size:14.5px;color:var(--
 .selbar-x{width:34px;height:34px;border:none;border-radius:50%;background:rgba(120,87,196,.10);color:var(--accent3);display:grid;place-items:center;cursor:pointer;padding:0}
 .selbar-x:active{transform:scale(.92)}
 .selbar-count{flex:1;font-weight:800;color:var(--accent3);font-size:14.5px}
-.selbar-actions{display:flex;gap:8px}
-.selbar-act{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;border:none;background:rgba(120,87,196,.08);color:var(--accent3);border-radius:16px;padding:11px 4px;cursor:pointer;font-weight:700;font-size:11.5px}
-.selbar-act:active{transform:scale(.94)}</style>
+.selbar-actions{display:flex;gap:6px}
+.selbar-act{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px;border:none;background:rgba(120,87,196,.08);color:var(--accent3);border-radius:14px;padding:10px 2px;cursor:pointer;font-weight:700;font-size:10.5px;line-height:1.1;text-align:center}
+.selbar-act:active{transform:scale(.94)}
+body.selecting #nav{display:none}</style>
 </head>
 <body>
 <div id="phone">
@@ -976,7 +977,8 @@ function renderNav() {
 function show(k, dir) {
   if (selMode && k !== 'plantas') {
     selMode = false;
-    selSet.clear()
+    selSet.clear();
+    document.body.classList.remove('selecting')
   }
   current = k;
   renderNav();
@@ -1222,6 +1224,8 @@ function batch(kind) {
       state.counters.waterTotal++
     } else if (kind === 'fert') {
       p.lastFert = t
+    } else if (kind === 'clean') {
+      p.lastClean = t
     } else if (kind === 'review') {
       p.lastReview = t
     } else if (kind === 'transplant') {
@@ -1231,9 +1235,11 @@ function batch(kind) {
   let xp = 0;
   if (kind === 'water') xp = PTS.regar * n;
   else if (kind === 'fert') xp = PTS.abonar * n;
+  else if (kind === 'clean') xp = PTS.limpiar * n;
   const lbl = {
     water: 'Regar',
     fert: 'Abonar',
+    clean: 'Limpiar',
     review: 'Revisar',
     transplant: 'Trasplantar'
   } [kind];
@@ -1253,6 +1259,7 @@ function batch(kind) {
   const done = {
     water: 'regadas',
     fert: 'abonadas',
+    clean: 'limpiadas',
     review: 'revisadas',
     transplant: 'trasplantadas'
   } [kind];
@@ -1271,10 +1278,11 @@ function selBar() {
   if (!selMode) return '';
   const n = selSet.size;
   const allSel = _visPlantIds.length > 0 && _visPlantIds.every(id => selSet.has(id));
-  return `<div class="selbar-spacer"></div><div class="selbar"><div class="selbar-top"><button class="selbar-x" onclick="J.exitSel()">${ic('ban',18)}</button><div class="selbar-count">${n} seleccionada${n===1?'':'s'}</div><button class="btn btn-ghost btn-sm" onclick="J.selectAllVisible()">${allSel?'Ninguna':'Todas'}</button></div><div class="selbar-actions"><button class="selbar-act" onclick="J.batch('water')">${ic('water',20)}<span>Regar</span></button><button class="selbar-act" onclick="J.batch('fert')">${ic('fert',20)}<span>Abonar</span></button><button class="selbar-act" onclick="J.batch('review')">${ic('eye',20)}<span>Revisar</span></button><button class="selbar-act" onclick="J.batch('transplant')">${ic('pot',20)}<span>Trasplantar</span></button></div></div>`
+  return `<div class="selbar-spacer"></div><div class="selbar"><div class="selbar-top"><button class="selbar-x" onclick="J.exitSel()">${ic('ban',18)}</button><div class="selbar-count">${n} seleccionada${n===1?'':'s'}</div><button class="btn btn-ghost btn-sm" onclick="J.selectAllVisible()">${allSel?'Ninguna':'Todas'}</button></div><div class="selbar-actions"><button class="selbar-act" onclick="J.batch('water')">${ic('water',20)}<span>Regar</span></button><button class="selbar-act" onclick="J.batch('fert')">${ic('fert',20)}<span>Abonar</span></button><button class="selbar-act" onclick="J.batch('clean')">${ic('brush',20)}<span>Limpiar</span></button><button class="selbar-act" onclick="J.batch('review')">${ic('eye',20)}<span>Revisar</span></button><button class="selbar-act" onclick="J.batch('transplant')">${ic('pot',20)}<span>Trasplante</span></button></div></div>`
 }
 
 function scrPlantas() {
+  document.body.classList.toggle('selecting', selMode);
   let P = state.plants.slice();
   if (plantSearch) P = P.filter(p => (p.name || '').toLowerCase().includes(plantSearch.toLowerCase()));
   if (plantFilter === 'favoritas') P = P.filter(p => p.favorite);
@@ -2314,7 +2322,7 @@ function scrPerfil() {
   <button class="btn btn-soft btn-block" style="margin-bottom:14px" onclick="J.importBackup()">${ic('refresh',16)} Restaurar copia de seguridad</button>
   <button class="btn btn-soft btn-block" style="margin-bottom:8px" onclick="J.installHelp()">${ic('plus',16)} Cómo instalar en el móvil</button>
   <button class="btn btn-ghost btn-block" onclick="J.resetAll()" style="color:var(--bad)">${ic('trash',16)} Reiniciar todos los datos</button>
-  <div class="mini" style="text-align:center;margin-top:14px;opacity:.6">Josie · versión 7 (selección múltiple) · toca el logo 5 veces para ajustes</div>`
+  <div class="mini" style="text-align:center;margin-top:14px;opacity:.6">Josie · versión 8 (selección + limpiar) · toca el logo 5 veces para ajustes</div>`
 }
 
 function changeAvatar() {
