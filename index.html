@@ -2,6 +2,9 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -247,7 +250,8 @@ input,select,textarea{font-family:var(--font-body);font-size:14.5px;color:var(--
 .selbar-actions{display:flex;gap:6px}
 .selbar-act{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px;border:none;background:rgba(120,87,196,.08);color:var(--accent3);border-radius:14px;padding:10px 2px;cursor:pointer;font-weight:700;font-size:10.5px;line-height:1.1;text-align:center}
 .selbar-act:active{transform:scale(.94)}
-body.selecting #nav{display:none}</style>
+body.selecting #nav{display:none}
+.sortsel{padding:9px 12px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.78);font-size:12.5px;font-weight:700;color:var(--muted);outline:none;max-width:62%}</style>
 </head>
 <body>
 <div id="phone">
@@ -470,9 +474,19 @@ function getTags() {
   return (state && state.profile && Array.isArray(state.profile.healthTags) && state.profile.healthTags.length) ? state.profile.healthTags : TAGS;
 }
 
+const SYMPT_OBJ = SYMPT.map(n => ({ n: n, c: 'warn' }));
+
 function getSympt() {
-  return (state && state.profile && Array.isArray(state.profile.symptoms)) ? state.profile.symptoms : SYMPT;
+  return (state && state.profile && Array.isArray(state.profile.symptoms) && state.profile.symptoms.length) ? state.profile.symptoms : SYMPT_OBJ;
 }
+
+const SEV_RANK = {
+  bad: 3,
+  warn: 2,
+  good: 1,
+  '': 0
+};
+const COLOR_CYCLE = ['', 'good', 'warn', 'bad'];
 
 function getSubs() {
   return (state && state.profile && Array.isArray(state.profile.substrates)) ? state.profile.substrates : [];
@@ -524,7 +538,7 @@ function freshState() {
       avatar: null,
       locations: ["Salón", "Cocina", "Baño", "Balcón", "Estantería"],
       substrates: ["Universal", "Sustrato cactus/suculentas", "Aroideas", "Fibra de coco", "Turba", "Drenante / perlita"],
-      symptoms: SYMPT.slice(),
+      symptoms: SYMPT.map(n => ({ n: n, c: 'warn' })),
       healthTags: TAGS.map(t => ({ k: t.k, n: t.n, c: t.c })),
       badges: []
     },
@@ -699,7 +713,8 @@ function migrate() {
   };
   if (state.counters.legendaryTotal == null) state.counters.legendaryTotal = 0;
   if (!Array.isArray(state.profile.substrates)) state.profile.substrates = ["Universal", "Sustrato cactus/suculentas", "Aroideas", "Fibra de coco", "Turba", "Drenante / perlita"];
-  if (!Array.isArray(state.profile.symptoms)) state.profile.symptoms = SYMPT.slice();
+  if (!Array.isArray(state.profile.symptoms)) state.profile.symptoms = SYMPT.map(n => ({ n: n, c: 'warn' }));
+  state.profile.symptoms = state.profile.symptoms.map(s => (typeof s === 'string') ? { n: s, c: 'warn' } : { n: s.n, c: s.c || '' });
   if (!Array.isArray(state.profile.healthTags) || !state.profile.healthTags.length) state.profile.healthTags = TAGS.map(t => ({ k: t.k, n: t.n, c: t.c }));
   state.plants.forEach(p => {
     if (!p.waterLog) p.waterLog = p.lastWater ? [p.lastWater] : [];
@@ -939,9 +954,21 @@ function iconHTML(plant, size) {
 }
 
 function plantHealth(p) {
-  if ((p.tags || []).includes('plaga')) return 'bad';
-  if ((p.tags || []).includes('estres')) return 'warn';
-  if ((p.symptoms || []).length) return 'warn';
+  let top = 0;
+  const tagMap = {};
+  getTags().forEach(t => tagMap[t.k] = t.c || '');
+  const symMap = {};
+  getSympt().forEach(s => symMap[s.n] = s.c || '');
+  (p.tags || []).forEach(k => {
+    const c = tagMap[k];
+    if (c != null && SEV_RANK[c] > top) top = SEV_RANK[c]
+  });
+  (p.symptoms || []).forEach(n => {
+    const c = symMap[n] != null ? symMap[n] : 'warn';
+    if (SEV_RANK[c] > top) top = SEV_RANK[c]
+  });
+  if (top === 3) return 'bad';
+  if (top === 2) return 'warn';
   return 'good'
 }
 
@@ -1075,7 +1102,7 @@ function scrInicio() {
     ${tile('En riesgo',riesgo,"J.goPlants('riesgo')",riesgo?'atención':'todo bien',riesgo?'bad':'good')}
     ${tile('Tareas',pend,"J.show('tareas')",pend?'pendientes':'al día',pend?'warn':'good')}</div>
   ${dashChart()}
-  <button class="btn btn-primary btn-block" style="margin:2px 0 11px" onclick="J.waterAll()">${ic('water',18)} Regar todo${total?` · ${total}`:''}</button>
+  <div class="grid2" style="margin:2px 0 11px"><button class="btn btn-primary btn-sm" onclick="J.waterAll()">${ic('water',17)} Regar todo${total?` · ${total}`:''}</button><button class="btn btn-soft btn-sm" onclick="J.reviewAll()">${ic('eye',17)} Revisar todo${sinRev?` · ${sinRev}`:''}</button></div>
   <div class="grid3" style="margin-bottom:6px"><button class="btn btn-soft btn-sm" onclick="J.show('tareas')">${ic('checkc',16)} Tareas</button><button class="btn btn-soft btn-sm" onclick="J.show('tienda')">${ic('image',16)} Iconos</button><button class="btn btn-soft btn-sm" onclick="J.show('cementerio')">${ic('grave',16)} Memoria</button></div>
   ${pend?`<div class="lead-label" style="margin-top:18px">Próximas tareas</div>`+state.tasks.filter(t=>!t.done).slice(0,3).map(taskRow).join(''):''}
   ${total===0?emptyBox('pot','Aún no tienes plantas','Pulsa «Planta» o el botón + para añadir la primera.'):''}`
@@ -1136,7 +1163,9 @@ function emptyBox(icon, t, s) {
 /* Mis plantas */
 let plantFilter = "todas",
   plantSearch = "",
-  plantLoc = "";
+  plantLoc = "",
+  plantSort = "",
+  _searchTimer = null;
 
 /* ===== Selección múltiple (estilo galería) ===== */
 let selMode = false,
@@ -1174,6 +1203,26 @@ function cardHoldEnd() {
   clearTimeout(_holdTimer)
 }
 
+function patchCardSel(id) {
+  const el = document.querySelector('.plant-card[data-id="' + id + '"]');
+  if (!el) return;
+  const on = selSet.has(id);
+  el.classList.toggle('sel', on);
+  const chk = el.querySelector('.pc-check');
+  if (chk) chk.classList.toggle('on', on)
+}
+
+function updateSelChrome() {
+  const n = selSet.size;
+  const countEl = document.getElementById('selCount');
+  if (countEl) countEl.textContent = n + ' seleccionada' + (n === 1 ? '' : 's');
+  const allBtn = document.getElementById('selAllBtn');
+  if (allBtn) {
+    const allSel = _visPlantIds.length > 0 && _visPlantIds.every(id => selSet.has(id));
+    allBtn.textContent = allSel ? 'Ninguna' : 'Todas'
+  }
+}
+
 function toggleSel(id) {
   if (selSet.has(id)) selSet.delete(id);
   else selSet.add(id);
@@ -1181,7 +1230,8 @@ function toggleSel(id) {
     exitSel();
     return
   }
-  scrPlantas()
+  patchCardSel(id);
+  updateSelChrome()
 }
 
 function enterSel() {
@@ -1197,13 +1247,15 @@ function exitSel() {
 }
 
 function selectAllVisible() {
-  if (_visPlantIds.every(id => selSet.has(id))) _visPlantIds.forEach(id => selSet.delete(id));
+  const allSel = _visPlantIds.length > 0 && _visPlantIds.every(id => selSet.has(id));
+  if (allSel) _visPlantIds.forEach(id => selSet.delete(id));
   else _visPlantIds.forEach(id => selSet.add(id));
   if (selSet.size === 0) {
     exitSel();
     return
   }
-  scrPlantas()
+  _visPlantIds.forEach(patchCardSel);
+  updateSelChrome()
 }
 
 function batch(kind) {
@@ -1269,20 +1321,41 @@ function batch(kind) {
   toast(n + ' ' + done + (xp ? (' · +' + xp + ' XP') : ''), xp ? 'pts' : '')
 }
 
+const SORT_OPTS = [
+  ['', 'Predeterminado'],
+  ['az', 'Nombre (A-Z)'],
+  ['za', 'Nombre (Z-A)'],
+  ['antiguas', 'Más antiguas'],
+  ['recientes', 'Más recientes']
+];
+
 function selToolbar() {
-  if (selMode || !state.plants.length) return '';
-  return `<div style="display:flex;justify-content:flex-end;margin:-2px 0 10px"><button class="btn btn-soft btn-sm" onclick="J.enterSel()">${ic('check',15)} Seleccionar varias</button></div>`
+  if (!state.plants.length) return '';
+  const sortSel = `<select class="sortsel" onchange="J.setSort(this.value)">${SORT_OPTS.map(o=>`<option value="${o[0]}" ${plantSort===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select>`;
+  const btn = selMode ? '' : `<button class="btn btn-soft btn-sm" onclick="J.enterSel()">${ic('check',15)} Seleccionar</button>`;
+  return `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin:-2px 0 10px">${sortSel}${btn}</div>`
 }
 
 function selBar() {
   if (!selMode) return '';
   const n = selSet.size;
   const allSel = _visPlantIds.length > 0 && _visPlantIds.every(id => selSet.has(id));
-  return `<div class="selbar-spacer"></div><div class="selbar"><div class="selbar-top"><button class="selbar-x" onclick="J.exitSel()">${ic('ban',18)}</button><div class="selbar-count">${n} seleccionada${n===1?'':'s'}</div><button class="btn btn-ghost btn-sm" onclick="J.selectAllVisible()">${allSel?'Ninguna':'Todas'}</button></div><div class="selbar-actions"><button class="selbar-act" onclick="J.batch('water')">${ic('water',20)}<span>Regar</span></button><button class="selbar-act" onclick="J.batch('fert')">${ic('fert',20)}<span>Abonar</span></button><button class="selbar-act" onclick="J.batch('clean')">${ic('brush',20)}<span>Limpiar</span></button><button class="selbar-act" onclick="J.batch('review')">${ic('eye',20)}<span>Revisar</span></button><button class="selbar-act" onclick="J.batch('transplant')">${ic('pot',20)}<span>Trasplante</span></button></div></div>`
+  return `<div class="selbar-spacer"></div><div class="selbar"><div class="selbar-top"><button class="selbar-x" onclick="J.exitSel()">${ic('ban',18)}</button><div class="selbar-count" id="selCount">${n} seleccionada${n===1?'':'s'}</div><button class="btn btn-ghost btn-sm" id="selAllBtn" onclick="J.selectAllVisible()">${allSel?'Ninguna':'Todas'}</button></div><div class="selbar-actions"><button class="selbar-act" onclick="J.batch('water')">${ic('water',20)}<span>Regar</span></button><button class="selbar-act" onclick="J.batch('fert')">${ic('fert',20)}<span>Abonar</span></button><button class="selbar-act" onclick="J.batch('clean')">${ic('brush',20)}<span>Limpiar</span></button><button class="selbar-act" onclick="J.batch('review')">${ic('eye',20)}<span>Revisar</span></button><button class="selbar-act" onclick="J.batch('transplant')">${ic('pot',20)}<span>Trasplante</span></button></div></div>`
 }
 
-function scrPlantas() {
-  document.body.classList.toggle('selecting', selMode);
+function applySort(P) {
+  if (plantSort === 'az') return P.slice().sort((a, b) => (a.name || '').localeCompare(b.name || '', 'es', {
+    sensitivity: 'base'
+  }));
+  if (plantSort === 'za') return P.slice().sort((a, b) => (b.name || '').localeCompare(a.name || '', 'es', {
+    sensitivity: 'base'
+  }));
+  if (plantSort === 'antiguas') return P.slice().sort((a, b) => (a.acquired || '9999-99-99').localeCompare(b.acquired || '9999-99-99'));
+  if (plantSort === 'recientes') return P.slice().sort((a, b) => (b.acquired || '0000-00-00').localeCompare(a.acquired || '0000-00-00'));
+  return P
+}
+
+function computePlantsBody() {
   let P = state.plants.slice();
   if (plantSearch) P = P.filter(p => (p.name || '').toLowerCase().includes(plantSearch.toLowerCase()));
   if (plantFilter === 'favoritas') P = P.filter(p => p.favorite);
@@ -1292,6 +1365,7 @@ function scrPlantas() {
   if (plantFilter === 'sinrevhoy') P = P.filter(p => !isRevToday(p));
   if (plantFilter === 'venta') P = P.filter(p => p.forSale);
   if (plantLoc) P = P.filter(p => (p.location || 'Sin ubicación') === plantLoc);
+  P = applySort(P);
   _visPlantIds = P.map(p => p.id);
   if (selSet.size) selSet.forEach(id => {
     if (!state.plants.some(p => p.id === id)) selSet.delete(id)
@@ -1301,7 +1375,18 @@ function scrPlantas() {
     const l = p.location || 'Sin ubicación';
     (g[l] = g[l] || []).push(p)
   });
-  const body = state.plants.length === 0 ? emptyBox('sprout', 'Tu jardín está vacío', 'Añade tu primera planta con el botón +.') : (P.length === 0 ? emptyBox('search', 'Sin resultados', 'Prueba otro filtro o búsqueda.') : Object.keys(g).sort().map(l => `<div class="group-h line">${esc(l)}</div>` + g[l].map(plantCard).join('')).join(''));
+  return state.plants.length === 0 ? emptyBox('sprout', 'Tu jardín está vacío', 'Añade tu primera planta con el botón +.') : (P.length === 0 ? emptyBox('search', 'Sin resultados', 'Prueba otro filtro o búsqueda.') : (plantSort ? P.map(plantCard).join('') : Object.keys(g).sort().map(l => `<div class="group-h line">${esc(l)}</div>` + g[l].map(plantCard).join('')).join('')))
+}
+
+function renderPlantsList() {
+  const el = document.getElementById('plantsList');
+  if (!el) return;
+  el.innerHTML = computePlantsBody()
+}
+
+function scrPlantas() {
+  document.body.classList.toggle('selecting', selMode);
+  const body = computePlantsBody();
   const fl = [
     ['todas', 'Todas'],
     ['favoritas', 'Favoritas'],
@@ -1315,16 +1400,17 @@ function scrPlantas() {
   <input class="search" placeholder="Buscar planta..." value="${esc(plantSearch)}" oninput="J.setSearch(this.value)">
   <div class="filters">${fl.map(f=>`<div class="fil ${plantFilter===f[0]?'on':''}" onclick="J.setFilter('${f[0]}')">${f[1]}</div>`).join('')}</div>${(function(){var locs=Array.from(new Set(state.plants.map(p=>p.location||'Sin ubicación')));return locs.length>1?`<div class="filters" style="margin-top:-2px">${[['','Todas las ubicaciones']].concat(locs.map(function(l){return [l,l]})).map(function(f){return `<div class="fil ${plantLoc===f[0]?'on':''}" onclick="J.setLoc('${encodeURIComponent(f[0])}')">${ic('pin',12)} ${esc(f[1])}</div>`
 }).join('')
-} </div>`:''})()}${selToolbar()}${body}${selBar()}`}
+} </div>`:''})()}${selToolbar()}<div id="plantsList">${body}</div>${selBar()}`}
 
 function setSearch(v) {
   plantSearch = v;
-  scrPlantas();
-  const i = $('.search');
-  if (i) {
-    i.focus();
-    i.setSelectionRange(v.length, v.length)
-  }
+  clearTimeout(_searchTimer);
+  _searchTimer = setTimeout(renderPlantsList, 90)
+}
+
+function setSort(v) {
+  plantSort = v;
+  scrPlantas()
 }
 
 function setFilter(f) {
@@ -1346,7 +1432,7 @@ function setLoc(v) {
 function plantCard(p) {
   const h = plantHealth(p),
     rev = daysSince(p.lastReview);
-  return `<div class="card plant-card${selMode&&selSet.has(p.id)?' sel':''}" onclick="J.cardTap('${p.id}')" ontouchstart="J.cardHoldStart('${p.id}')" ontouchmove="J.cardHoldEnd()" ontouchend="J.cardHoldEnd()" onmousedown="J.cardHoldStart('${p.id}')" onmouseup="J.cardHoldEnd()" onmouseleave="J.cardHoldEnd()" oncontextmenu="return false">${selMode?`<div class="pc-check${selSet.has(p.id)?' on':''}">${ic('check',15)}</div>`:`<div class="pc-actions">
+  return `<div class="card plant-card${selMode&&selSet.has(p.id)?' sel':''}" data-id="${p.id}" onclick="J.cardTap('${p.id}')" ontouchstart="J.cardHoldStart('${p.id}')" ontouchmove="J.cardHoldEnd()" ontouchend="J.cardHoldEnd()" onmousedown="J.cardHoldStart('${p.id}')" onmouseup="J.cardHoldEnd()" onmouseleave="J.cardHoldEnd()" oncontextmenu="return false">${selMode?`<div class="pc-check${selSet.has(p.id)?' on':''}">${ic('check',15)}</div>`:`<div class="pc-actions">
       <span class="${p.favorite?'fav-on':''}" onclick="event.stopPropagation();J.toggleFav('${p.id}')">${ic('star',18,p.favorite?'fill':'')}</span>
       <span onclick="event.stopPropagation();J.plantMenu('${p.id}')">${ic('dots',18)}</span></div>`}
     <div class="pic">${iconHTML(p,64)}</div>
@@ -1427,7 +1513,7 @@ function fichaEstado(p) {
   ${isRevToday(p)?`<div class="row" style="margin:13px 0"><button class="btn btn-soft" style="color:var(--good)" onclick="J.review('${p.id}')">${ic('eye',16)} Revisada hoy ✓</button><button class="btn btn-ghost btn-sm" onclick="J.unreview('${p.id}')">${ic('ban',15)} Quitar</button></div>`:`<button class="btn btn-soft btn-block" style="margin:13px 0" onclick="J.review('${p.id}')">${ic('eye',16)} Marcar como revisada hoy</button>`}
   <div class="field"><label>Sustrato</label><select id="fe_sub_${p.id}" class="inp" onchange="J.setSubstrate('${p.id}',this.value)"><option value="" ${p.substrate?'':'selected'}>Sin especificar</option>${getSubs().map(su=>`<option ${p.substrate===su?'selected':''}>${esc(su)}</option>`).join('')}${(p.substrate&&getSubs().indexOf(p.substrate)<0)?`<option selected>${esc(p.substrate)}</option>`:''}<option value="__new">+ Nuevo sustrato...</option></select></div>
   <div class="field"><label>Etiquetas de salud</label><div class="tagrow">${getTags().map(t=>`<div class="tagsel ${(p.tags||[]).includes(t.k)?'on '+(t.c||''):''}" onclick="J.toggleTag('${p.id}','${t.k}')">${esc(t.n)}</div>`).join('')}</div></div>
-  <div class="field"><label>Síntomas</label><div class="tagrow">${getSympt().map((s,si)=>`<div class="tagsel ${(p.symptoms||[]).includes(s)?'on warn':''}" onclick="J.toggleSymptAt('${p.id}',${si})">${esc(s)}</div>`).join('')}</div></div>
+  <div class="field"><label>Síntomas</label><div class="tagrow">${getSympt().map((s,si)=>`<div class="tagsel ${(p.symptoms||[]).includes(s.n)?'on '+(s.c||'warn'):''}" onclick="J.toggleSymptAt('${p.id}',${si})">${esc(s.n)}</div>`).join('')}</div></div>
   <div class="field"><label>Notas / alertas</label><textarea class="inp" oninput="J.setNotes('${p.id}',this.value)" placeholder="Ej: últimamente bebe mucha agua...">${esc(p.notes)}</textarea></div>`
 }
 
@@ -1648,7 +1734,7 @@ function toggleSympt(id, s) {
 function toggleSymptAt(id, idx) {
   const s = getSympt()[idx];
   if (s == null) return;
-  toggleSympt(id, s)
+  toggleSympt(id, s.n)
 }
 
 function setNotes(id, v) {
@@ -2311,8 +2397,8 @@ function scrPerfil() {
   <div class="badge-grid">${BADGES.map(b=>`<div class="badge ${r.badges.includes(b.id)?'':'lock'}"><div class="e">${ic(b.i,26)}</div><div class="n">${b.n}</div></div>`).join('')}</div>
   <div class="group-h line">Ubicaciones</div><div class="card">${r.locations.map((l,i)=>`<div class="list-row" style="padding:9px 0;margin:0;border-bottom:1px solid var(--line)"><div class="grow" style="display:flex;align-items:center;gap:7px">${ic('pin',15)} ${esc(l)}</div><span class="icon-btn" onclick="J.renameLoc(${i})">${ic('pencil',16)}</span><span class="icon-btn" onclick="J.delLoc(${i})">${ic('trash',16)}</span></div>`).join('')}<button class="btn btn-soft btn-block btn-sm" style="margin-top:11px" onclick="J.addLoc()">${ic('plus',15)} Añadir ubicación</button></div>
   <div class="group-h line">Sustratos</div><div class="card">${(r.substrates||[]).map((l,i)=>`<div class="list-row" style="padding:9px 0;margin:0;border-bottom:1px solid var(--line)"><div class="grow" style="display:flex;align-items:center;gap:7px">${ic('pot',15)} ${esc(l)}</div><span class="icon-btn" onclick="J.renameSub(${i})">${ic('pencil',16)}</span><span class="icon-btn" onclick="J.delSub(${i})">${ic('trash',16)}</span></div>`).join('')}<button class="btn btn-soft btn-block btn-sm" style="margin-top:11px" onclick="J.addSub()">${ic('plus',15)} Añadir sustrato</button></div>
-  <div class="group-h line">Etiquetas de salud</div><div class="card">${(r.healthTags||[]).map((t,i)=>`<div class="list-row" style="padding:9px 0;margin:0;border-bottom:1px solid var(--line)"><div class="grow" style="display:flex;align-items:center;gap:7px"><span class="tagsel on ${t.c||''}" style="pointer-events:none">${esc(t.n)}</span></div><span class="icon-btn" onclick="J.renameTag(${i})">${ic('pencil',16)}</span><span class="icon-btn" onclick="J.delTag(${i})">${ic('trash',16)}</span></div>`).join('')}<button class="btn btn-soft btn-block btn-sm" style="margin-top:11px" onclick="J.addTag()">${ic('plus',15)} Añadir etiqueta</button></div>
-  <div class="group-h line">Síntomas</div><div class="card">${(r.symptoms||[]).map((l,i)=>`<div class="list-row" style="padding:9px 0;margin:0;border-bottom:1px solid var(--line)"><div class="grow" style="display:flex;align-items:center;gap:7px">${ic('alert',15)} ${esc(l)}</div><span class="icon-btn" onclick="J.renameSympt(${i})">${ic('pencil',16)}</span><span class="icon-btn" onclick="J.delSympt(${i})">${ic('trash',16)}</span></div>`).join('')}<button class="btn btn-soft btn-block btn-sm" style="margin-top:11px" onclick="J.addSympt()">${ic('plus',15)} Añadir síntoma</button></div>
+  <div class="group-h line">Etiquetas de salud</div><div class="card"><div class="mini" style="margin-bottom:9px">Toca el color de una etiqueta para cambiarlo (verde/ámbar/rojo/neutro). Define qué tan grave es cada una.</div>${(r.healthTags||[]).map((t,i)=>`<div class="list-row" style="padding:9px 0;margin:0;border-bottom:1px solid var(--line)"><div class="grow" style="display:flex;align-items:center;gap:7px"><span class="tagsel on ${t.c||''}" onclick="J.cycleTagColor(${i})">${esc(t.n)}</span></div><span class="icon-btn" onclick="J.renameTag(${i})">${ic('pencil',16)}</span><span class="icon-btn" onclick="J.delTag(${i})">${ic('trash',16)}</span></div>`).join('')}<button class="btn btn-soft btn-block btn-sm" style="margin-top:11px" onclick="J.addTag()">${ic('plus',15)} Añadir etiqueta</button></div>
+  <div class="group-h line">Síntomas</div><div class="card"><div class="mini" style="margin-bottom:9px">Toca el color de un síntoma para cambiarlo. Así decides tú qué tan grave es cada uno.</div>${(r.symptoms||[]).map((s,i)=>`<div class="list-row" style="padding:9px 0;margin:0;border-bottom:1px solid var(--line)"><div class="grow" style="display:flex;align-items:center;gap:7px"><span class="tagsel on ${s.c||'warn'}" onclick="J.cycleSymptColor(${i})">${esc(s.n)}</span></div><span class="icon-btn" onclick="J.renameSympt(${i})">${ic('pencil',16)}</span><span class="icon-btn" onclick="J.delSympt(${i})">${ic('trash',16)}</span></div>`).join('')}<button class="btn btn-soft btn-block btn-sm" style="margin-top:11px" onclick="J.addSympt()">${ic('plus',15)} Añadir síntoma</button></div>
   <div class="group-h line">Actividad reciente</div><div class="card">${state.log.length?state.log.slice(0,8).map(l=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--line);font-size:13px"><span>${esc(l.t)}</span><b style="color:var(--accent3);display:inline-flex;align-items:center;gap:3px">${l.n>0?'+'+l.n+' XP':''}</b></div>`).join(''):'<div class="mini">Sin actividad todavía</div>'}</div>
   <div class="field" style="margin-top:16px"><label>Nombre del jardín</label><input class="inp" value="${esc(r.name)}" onchange="J.setName(this.value)"></div>
   <div class="group-h line">Idioma</div>
@@ -2322,7 +2408,7 @@ function scrPerfil() {
   <button class="btn btn-soft btn-block" style="margin-bottom:14px" onclick="J.importBackup()">${ic('refresh',16)} Restaurar copia de seguridad</button>
   <button class="btn btn-soft btn-block" style="margin-bottom:8px" onclick="J.installHelp()">${ic('plus',16)} Cómo instalar en el móvil</button>
   <button class="btn btn-ghost btn-block" onclick="J.resetAll()" style="color:var(--bad)">${ic('trash',16)} Reiniciar todos los datos</button>
-  <div class="mini" style="text-align:center;margin-top:14px;opacity:.6">Josie · versión 8 (selección + limpiar) · toca el logo 5 veces para ajustes</div>`
+  <div class="mini" style="text-align:center;margin-top:14px;opacity:.6">Josie · versión 9 (rendimiento, orden, revisar todo, colores) · toca el logo 5 veces para ajustes</div>`
 }
 
 function changeAvatar() {
@@ -2438,7 +2524,10 @@ function addSympt() {
   }], v => {
     if (v.v) {
       state.profile.symptoms = state.profile.symptoms || [];
-      if (state.profile.symptoms.indexOf(v.v) < 0) state.profile.symptoms.push(v.v);
+      if (!state.profile.symptoms.some(s => s.n === v.v)) state.profile.symptoms.push({
+        n: v.v,
+        c: 'warn'
+      });
       save();
       scrPerfil()
     }
@@ -2449,11 +2538,11 @@ function renameSympt(i) {
   inputModal("Renombrar síntoma", [{
     id: 'v',
     label: 'Nombre',
-    value: state.profile.symptoms[i]
+    value: state.profile.symptoms[i].n
   }], v => {
     if (v.v) {
-      const old = state.profile.symptoms[i];
-      state.profile.symptoms[i] = v.v;
+      const old = state.profile.symptoms[i].n;
+      state.profile.symptoms[i].n = v.v;
       state.plants.forEach(p => {
         if (p.symptoms) {
           const k = p.symptoms.indexOf(old);
@@ -2467,15 +2556,33 @@ function renameSympt(i) {
 }
 
 function delSympt(i) {
-  confirmModal("Eliminar síntoma", "¿Eliminar «" + esc(state.profile.symptoms[i]) + "»?", () => {
+  confirmModal("Eliminar síntoma", "¿Eliminar «" + esc(state.profile.symptoms[i].n) + "»?", () => {
     const removed = state.profile.symptoms.splice(i, 1)[0];
     state.plants.forEach(p => {
-      if (p.symptoms) p.symptoms = p.symptoms.filter(s => s !== removed)
+      if (p.symptoms) p.symptoms = p.symptoms.filter(s => s !== removed.n)
     });
     save();
     closeModal2();
     scrPerfil()
   }, true)
+}
+
+function cycleSymptColor(i) {
+  const s = state.profile.symptoms[i];
+  if (!s) return;
+  const idx = COLOR_CYCLE.indexOf(s.c || '');
+  s.c = COLOR_CYCLE[(idx + 1) % COLOR_CYCLE.length];
+  save();
+  scrPerfil()
+}
+
+function cycleTagColor(i) {
+  const t = state.profile.healthTags[i];
+  if (!t) return;
+  const idx = COLOR_CYCLE.indexOf(t.c || '');
+  t.c = COLOR_CYCLE[(idx + 1) % COLOR_CYCLE.length];
+  save();
+  scrPerfil()
 }
 
 /* Etiquetas de salud */
@@ -2546,6 +2653,29 @@ function waterAll() {
   gain(c * PTS.regar, "Regar todo (" + c + ")");
   recomputeBadges();
   save();
+  show('inicio')
+}
+
+function reviewAll() {
+  if (!state.plants.length) {
+    toast("No tienes plantas", "bad");
+    return
+  }
+  const t = today();
+  let c = 0;
+  state.plants.forEach(p => {
+    if (p.lastReview !== t) {
+      p.lastReview = t;
+      c++
+    }
+  });
+  if (!c) {
+    toast("Ya estaban todas revisadas hoy");
+    return
+  }
+  recomputeBadges();
+  save();
+  toast(c + " revisadas hoy");
   show('inicio')
 }
 
@@ -3426,6 +3556,7 @@ function admCombos() {
     show,
     quickAdd,
     waterAll,
+    reviewAll,
     openPlant,
     toggleFav,
     plantMenu,
@@ -3515,6 +3646,7 @@ function admCombos() {
     exportBackup,
     importBackup,
     setLoc,
+    setSort,
     goPlants,
     toggleSale,
     unreview,
@@ -3529,9 +3661,11 @@ function admCombos() {
     addSympt,
     renameSympt,
     delSympt,
+    cycleSymptColor,
     addTag,
     renameTag,
     delTag,
+    cycleTagColor,
     cardTap,
     cardHoldStart,
     cardHoldEnd,
@@ -3584,7 +3718,7 @@ function admCombos() {
     refreshUndo();
     toast("Acción deshecha")
   }
-  ['water', 'setWater', 'fert', 'setFert', 'transplant', 'setTransplant', 'cleanPlant', 'setClean', 'review', 'unreview', 'toggleFlower', 'toggleTag', 'toggleSympt', 'toggleSymptAt', 'toggleSale', 'setSubstrate', 'setPhase', 'savePlant', 'confirmKill', 'deletePlant', 'promote', 'setPlantIcon', 'uploadIcon', 'delIcon', 'toggleFav', 'addPhoto', 'removePhoto', 'incPhoto', 'incRemovePhoto', 'setIncSub', 'batch'].forEach(function(nm) {
+  ['water', 'setWater', 'fert', 'setFert', 'transplant', 'setTransplant', 'cleanPlant', 'setClean', 'review', 'unreview', 'toggleFlower', 'toggleTag', 'toggleSympt', 'toggleSymptAt', 'toggleSale', 'setSubstrate', 'setPhase', 'savePlant', 'confirmKill', 'deletePlant', 'promote', 'setPlantIcon', 'uploadIcon', 'delIcon', 'toggleFav', 'addPhoto', 'removePhoto', 'incPhoto', 'incRemovePhoto', 'setIncSub', 'batch', 'waterAll', 'reviewAll'].forEach(function(nm) {
     var o = J[nm];
     if (typeof o === 'function') J[nm] = function() {
       pushUndo();
