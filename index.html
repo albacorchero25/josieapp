@@ -56,6 +56,8 @@ body{overflow-x:hidden}
 .logo-img{width:30px;height:30px;border-radius:10px;object-fit:cover;background:rgba(255,255,255,.6);border:1px solid var(--line)}
 .logo-txt{font-family:var(--font-logo);font-size:28px;letter-spacing:.5px;color:var(--c-logo);font-weight:var(--w-logo);font-style:var(--st-logo)}
 .hdr-right{display:flex;align-items:center;gap:8px}
+.hdr-avatar{width:33px;height:33px;border-radius:50%;cursor:pointer;flex:none;display:grid;place-items:center;color:#fff;border:2px solid #fff;box-shadow:0 4px 12px rgba(139,111,212,.35);background:linear-gradient(135deg,var(--accent),var(--accent2));transition:transform .15s}
+.hdr-avatar:active{transform:scale(.9)}
 .pill{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(180deg,rgba(255,255,255,.8),rgba(255,255,255,.5));
   border:1px solid rgba(255,255,255,.7);padding:8px 13px;border-radius:30px;font-weight:700;font-size:14px;cursor:pointer;
   box-shadow:0 4px 14px rgba(85,58,138,.1),inset 0 1px 0 rgba(255,255,255,.8);transition:transform .15s;
@@ -69,6 +71,10 @@ body{overflow-x:hidden}
 .anim-up{animation:screenIn .46s cubic-bezier(.22,.61,.36,1)}
 .anim-l{animation:screenInL .42s cubic-bezier(.22,.61,.36,1)}
 .anim-r{animation:screenInR .42s cubic-bezier(.22,.61,.36,1)}
+@keyframes cardIn{0%{opacity:0;transform:translateY(10px) scale(.98)}100%{opacity:1;transform:none}}
+.stagger{opacity:0;animation:cardIn .4s cubic-bezier(.22,.68,.32,1) forwards}
+.card,.plant-card,.grave,.inc-card,.tile{transition:transform .18s cubic-bezier(.3,.7,.4,1),box-shadow .18s}
+@media (prefers-reduced-motion: reduce){.stagger,.anim-up,.anim-l,.anim-r{animation:none!important;opacity:1!important}}
 .s-title{font-family:var(--font-head);font-size:28px;font-weight:var(--w-head);font-style:var(--st-head);color:var(--c-head);margin:6px 2px 3px;letter-spacing:-.6px}
 .s-sub{color:var(--muted);font-size:13.5px;margin:0 2px 18px;font-weight:500;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 
@@ -156,6 +162,7 @@ input,select,textarea{font-family:var(--font-body);font-size:14.5px;color:var(--
 .tagsel{padding:8px 14px;border-radius:18px;border:1px solid var(--line);background:rgba(255,255,255,.65);font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;transition:all .18s}
 .tagsel.on{background:var(--accent);color:#fff;border-color:transparent}
 .tagsel.on.bad{background:var(--bad)}.tagsel.on.warn{background:var(--warn)}.tagsel.on.good{background:var(--good)}
+.tagsel.chosen{box-shadow:0 0 0 2.5px #fff inset,0 0 0 4.5px var(--accent3)}
 
 .phases{display:flex;gap:8px;overflow-x:auto;padding:4px 0 9px}
 .phase{flex:none;text-align:center;padding:12px 14px;border-radius:17px;border:1px solid var(--line);background:rgba(255,255,255,.62);cursor:pointer;min-width:78px;transition:all .22s;color:var(--accent3)}
@@ -176,10 +183,16 @@ input,select,textarea{font-family:var(--font-body);font-size:14.5px;color:var(--
 .shop-item .pic{width:100px;height:100px}.shop-item .nm{font-weight:700;font-size:13px}.shop-item .pr{font-size:13px;font-weight:800;color:var(--accent3);display:inline-flex;align-items:center;gap:4px}
 .owned-badge{font-size:11px;font-weight:800;color:var(--good);display:inline-flex;align-items:center;gap:4px}
 
-.grave{position:relative;width:100%;padding:24px 14px 16px;text-align:center;background:linear-gradient(180deg,rgba(255,255,255,.62),rgba(197,184,228,.18));border:1px solid var(--line);border-radius:100px 100px 16px 16px;overflow:hidden;cursor:pointer;box-shadow:var(--sh1)}
+.grave{position:relative;width:100%;padding:24px 14px 16px;text-align:center;background:linear-gradient(180deg,rgba(255,255,255,.62),rgba(197,184,228,.18));border:1px solid var(--line);border-radius:100px 100px 16px 16px;cursor:pointer;box-shadow:var(--sh1)}
 .grave .pic{width:56px;height:56px;margin:0 auto 9px;opacity:.82;filter:grayscale(.4)}
 .grave .nm{font-weight:800;font-size:14px}.grave .dt{font-size:11px;color:var(--muted);margin-top:3px}
 .grave .cross{color:var(--soft);margin-bottom:6px;display:flex;justify-content:center}
+.sold{position:relative;width:100%;padding:24px 14px 16px;text-align:center;background:linear-gradient(180deg,rgba(255,255,255,.68),rgba(214,182,110,.16));border:1px solid var(--line);border-radius:100px 100px 16px 16px;cursor:pointer;box-shadow:var(--sh1)}
+.sold .badge{color:var(--gold);margin-bottom:6px;display:flex;justify-content:center}
+.sold .pic{width:56px;height:56px;margin:0 auto 9px}
+.sold .nm{font-weight:800;font-size:14px}
+.sold .dt{font-size:11px;color:var(--muted);margin-top:3px}
+.sold .price{font-size:13.5px;font-weight:800;color:var(--good);margin-top:5px}
 
 .badge-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
 .badge{padding:15px 8px;text-align:center;border-radius:19px;border:1px solid var(--line);background:rgba(255,255,255,.55);box-shadow:var(--sh1)}
@@ -190,9 +203,11 @@ input,select,textarea{font-family:var(--font-body);font-size:14.5px;color:var(--
 #overlay,#overlay2{position:fixed;inset:0;z-index:100;background:rgba(48,36,74,.44);backdrop-filter:blur(6px);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .28s}
 #overlay2{z-index:120;background:rgba(48,36,74,.32);align-items:center}
 #overlay.on,#overlay2.on{opacity:1;pointer-events:auto}
-.modal{width:100%;max-width:440px;max-height:92vh;overflow-y:auto;background:linear-gradient(180deg,#FCFBFF,#F2EFFA);border-radius:32px 32px 0 0;padding:10px 20px calc(30px + env(safe-area-inset-bottom));transform:translateY(100%);transition:transform .38s cubic-bezier(.2,.84,.28,1);box-shadow:0 -12px 44px rgba(60,40,110,.22)}
-.modal-sm{max-width:380px;border-radius:28px;margin:0 12px;transform:translateY(60px)}
-#overlay.on .modal,#overlay2.on .modal{transform:none}
+.modal-shell{width:100%;max-width:440px;max-height:92vh;display:flex;border-radius:32px 32px 0 0;overflow:hidden;filter:drop-shadow(0 -12px 30px rgba(60,40,110,.22));transform:translateY(100%);transition:transform .38s cubic-bezier(.2,.84,.28,1)}
+.modal-shell-sm{max-width:380px;max-height:88vh;margin:0 12px;border-radius:28px;transform:translateY(40px)}
+#overlay.on .modal-shell,#overlay2.on .modal-shell{transform:none}
+.modal{flex:1;min-width:0;width:100%;overflow-y:auto;background:linear-gradient(180deg,#FCFBFF,#F2EFFA);padding:10px 20px calc(30px + env(safe-area-inset-bottom))}
+.modal-sm{padding-top:24px}
 .modal-grab{width:44px;height:5px;border-radius:5px;background:var(--soft);margin:8px auto 16px;opacity:.55}
 .modal h3{margin:4px 2px 16px;font-size:21px;font-weight:800;letter-spacing:-.4px;color:var(--c-head)}
 .mini{font-size:12px;color:var(--muted);line-height:1.5}
@@ -216,6 +231,12 @@ input,select,textarea{font-family:var(--font-body);font-size:14.5px;color:var(--
 .sheet-btn:active{transform:scale(.97)}.sheet-btn .ico{color:var(--accent3);display:inline-flex}.sheet-btn.danger{color:var(--bad)}.sheet-btn.danger .ico{color:var(--bad)}
 .photo-box{width:100%;border-radius:18px;overflow:hidden;border:1px solid var(--line);margin-bottom:10px;background:rgba(255,255,255,.5)}
 .photo-box img{width:100%;display:block;max-height:240px;object-fit:cover}
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:4px}
+.photo-thumb{position:relative;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:rgba(255,255,255,.5);aspect-ratio:1;cursor:pointer}
+.photo-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.photo-thumb-dt{position:absolute;left:0;right:0;bottom:0;font-size:9px;font-weight:700;color:#fff;background:linear-gradient(0deg,rgba(30,20,50,.72),transparent);padding:12px 6px 4px;text-align:center;line-height:1.25}
+.photo-thumb-actions{position:absolute;top:4px;right:4px;display:flex;gap:4px}
+.photo-thumb-actions .icon-btn{background:rgba(30,20,50,.5);color:#fff;border-radius:8px;padding:5px}
 .kbd{font-family:ui-monospace,monospace;background:rgba(139,111,212,.13);padding:2px 8px;border-radius:6px;font-weight:700;color:var(--accent3)}
 .chart-wrap{overflow:hidden}.chart-wrap svg{width:100%;height:auto;display:block}
 .style-btns{display:flex;gap:6px}
@@ -236,7 +257,7 @@ input,select,textarea{font-family:var(--font-body);font-size:14.5px;color:var(--
 .hero-card{padding:18px}
 .statpill{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:800;padding:5px 12px;border-radius:22px}
 .statpill.good{background:rgba(107,168,140,.18);color:var(--good)}.statpill.warn{background:rgba(201,154,92,.2);color:var(--warn)}.statpill.bad{background:rgba(199,126,150,.18);color:var(--bad)}
-.sheet-x{position:absolute;top:13px;right:15px;width:34px;height:34px;border-radius:50%;border:none;background:rgba(120,87,196,.10);color:var(--accent3);display:grid;place-items:center;cursor:pointer;z-index:6;padding:0}.sheet-x:active{transform:scale(.92)}.modal{max-height:90vh;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;position:relative;padding-top:30px}.modal-sm{max-height:88vh;overflow-y:auto}.modal-grab{cursor:grab}
+.sheet-x{position:absolute;top:13px;right:15px;width:34px;height:34px;border-radius:50%;border:none;background:rgba(120,87,196,.10);color:var(--accent3);display:grid;place-items:center;cursor:pointer;z-index:6;padding:0}.sheet-x:active{transform:scale(.92)}.modal{-webkit-overflow-scrolling:touch;overscroll-behavior:contain;position:relative;padding-top:30px}.modal-grab{cursor:grab}
 .plant-card{position:relative;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 .plant-card.sel{outline:2.5px solid var(--accent3);outline-offset:-2px;background:rgba(120,87,196,.08)}
 .pc-check{position:absolute;top:13px;right:15px;width:26px;height:26px;border-radius:50%;border:2px solid var(--accent3);background:#fff;display:grid;place-items:center;color:transparent;z-index:6}
@@ -257,13 +278,13 @@ body.selecting #nav{display:none}
 <div id="phone">
   <div id="header">
     <div class="logo-wrap" id="logoTap"><img class="logo-img hidden" id="logoImg" alt=""><span class="logo-txt" id="logoTxt">Josie</span></div>
-    <div class="hdr-right"><div class="pill" onclick="J.undo()" id="undoPill" style="display:none"></div><div class="pill flame" onclick="J.show('perfil')" id="streakPill"></div></div>
+    <div class="hdr-right"><div class="pill" onclick="J.undo()" id="undoPill" style="display:none"></div><div class="hdr-avatar" onclick="J.show('perfil')" id="hdrAvatar" title="Perfil"></div><div class="pill flame" onclick="J.show('perfil')" id="streakPill"></div></div>
   </div>
   <div id="screen"></div>
   <div id="nav"></div>
 </div>
-<div id="overlay" onclick="if(event.target===this)J.closeModal()"><div class="modal" id="modal"></div></div>
-<div id="overlay2" onclick="if(event.target===this)J.closeModal2()"><div class="modal modal-sm" id="modal2"></div></div>
+<div id="overlay" onclick="if(event.target===this)J.closeModal()"><div class="modal-shell"><div class="modal" id="modal"></div></div></div>
+<div id="overlay2" onclick="if(event.target===this)J.closeModal2()"><div class="modal-shell modal-shell-sm"><div class="modal modal-sm" id="modal2"></div></div></div>
 <div id="toast"></div>
 
 <script>
@@ -322,7 +343,9 @@ const IC = {
   chart: '<path d="M4 20V4"/><path d="M4 20h16"/><rect x="7" y="12" width="2.6" height="5" rx="1"/><rect x="12" y="8" width="2.6" height="9" rx="1"/><rect x="17" y="14" width="2.6" height="3" rx="1"/>',
   ban: '<circle cx="12" cy="12" r="8.5"/><path d="M6 6l12 12"/>',
   skull: '<path d="M12 3a8 8 0 0 0-5 14v2.5h10V17a8 8 0 0 0-5-14z"/><circle cx="9" cy="12" r="1.3"/><circle cx="15" cy="12" r="1.3"/>',
-  arrow: '<path d="M7 17 17 7M8.5 7H17v8.5"/>'
+  arrow: '<path d="M7 17 17 7M8.5 7H17v8.5"/>',
+  bug: '<circle cx="12" cy="13" r="5.5"/><path d="M12 7.5V5M9.5 6l-1.2-1.6M14.5 6l1.2-1.6"/><path d="M6.5 13H3M21 13h-3.5M7 17.5l-2.6 2M17 17.5l2.6 2M7 9.5l-2.6-2M17 9.5l2.6-2"/>',
+  user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>'
 };
 
 function ic(n, s = 18, extra = '') {
@@ -488,6 +511,30 @@ const SEV_RANK = {
 };
 const COLOR_CYCLE = ['', 'good', 'warn', 'bad'];
 
+/* Colores personalizados para etiquetas (añadidos desde el panel secreto) */
+function isCustomColor(c) {
+  return typeof c === 'string' && c.charAt(0) === '#'
+}
+
+function tagColorClass(c) {
+  return isCustomColor(c) ? '' : (c || '')
+}
+
+function tagColorAttrs(c) {
+  return isCustomColor(c) ? ` style="background:${c};color:#fff;border-color:transparent"` : ''
+}
+
+function colorOptions() {
+  const base = [
+    ['', 'Neutro'],
+    ['good', 'Verde'],
+    ['warn', 'Ámbar'],
+    ['bad', 'Rojo']
+  ];
+  const custom = ((state && state.theme && state.theme.customColors) || []).map(c => [c.hex, c.name || c.hex]);
+  return base.concat(custom)
+}
+
 function getSubs() {
   return (state && state.profile && Array.isArray(state.profile.substrates)) ? state.profile.substrates : [];
 }
@@ -540,12 +587,14 @@ function freshState() {
       substrates: ["Universal", "Sustrato cactus/suculentas", "Aroideas", "Fibra de coco", "Turba", "Drenante / perlita"],
       symptoms: SYMPT.map(n => ({ n: n, c: 'warn' })),
       healthTags: TAGS.map(t => ({ k: t.k, n: t.n, c: t.c })),
+      pestTag: { n: "Plaga detectada", c: "bad" },
       badges: []
     },
     plants: [],
     tasks: [],
     incubator: [],
     cemetery: [],
+    sales: [],
     inventory: {
       macetas: [],
       plantas: [],
@@ -573,6 +622,7 @@ function freshState() {
         body: ""
       },
       customFonts: {},
+      customColors: [],
       text: {
         logo: {
           color: "",
@@ -694,7 +744,7 @@ async function load() {
 function migrate() {
   const _fs = freshState();
   if (!state.profile || typeof state.profile !== 'object') state.profile = _fs.profile;
-  ['plants', 'tasks', 'incubator', 'cemetery', 'log'].forEach(k => {
+  ['plants', 'tasks', 'incubator', 'cemetery', 'log', 'sales'].forEach(k => {
     if (!Array.isArray(state[k])) state[k] = []
   });
   if (!state.inventory || typeof state.inventory !== 'object') state.inventory = _fs.inventory;
@@ -716,12 +766,32 @@ function migrate() {
   if (!Array.isArray(state.profile.symptoms)) state.profile.symptoms = SYMPT.map(n => ({ n: n, c: 'warn' }));
   state.profile.symptoms = state.profile.symptoms.map(s => (typeof s === 'string') ? { n: s, c: 'warn' } : { n: s.n, c: s.c || '' });
   if (!Array.isArray(state.profile.healthTags) || !state.profile.healthTags.length) state.profile.healthTags = TAGS.map(t => ({ k: t.k, n: t.n, c: t.c }));
+  if (!state.profile.pestTag || typeof state.profile.pestTag !== 'object') state.profile.pestTag = { n: "Plaga detectada", c: "bad" };
+  if (typeof state.profile.pestTag.n !== 'string' || !state.profile.pestTag.n) state.profile.pestTag.n = "Plaga detectada";
+  if (typeof state.profile.pestTag.c !== 'string') state.profile.pestTag.c = "bad";
   state.plants.forEach(p => {
     if (!p.waterLog) p.waterLog = p.lastWater ? [p.lastWater] : [];
     if (!p.iconId) p.iconId = "base";
     if (p.legendaryCount == null) p.legendaryCount = (p.legendaryClaimed ? 1 : 0);
     if (p.substrate == null) p.substrate = "";
-    if (p.forSale == null) p.forSale = false
+    if (p.forSale == null) p.forSale = false;
+    if (p.salePrice === undefined) p.salePrice = null;
+    /* Historial fotográfico: migra la foto única antigua a un historial, sin perderla */
+    if (!Array.isArray(p.photos)) p.photos = [];
+    if (p.photo && !p.photos.some(ph => ph && ph.src === p.photo)) {
+      p.photos.push({ id: uid(), src: p.photo, ts: p.photos.length ? p.photos[0].ts : (p.acquired ? new Date(p.acquired + 'T12:00').getTime() : Date.now()) })
+    }
+    p.photos = p.photos.filter(ph => ph && ph.src).map(ph => ({ id: ph.id || uid(), src: ph.src, ts: ph.ts || Date.now() }));
+    p.photos.sort((a, b) => a.ts - b.ts);
+    if (!p.photo && p.photos.length) p.photo = p.photos[p.photos.length - 1].src;
+    /* Historial de plagas */
+    if (!Array.isArray(p.pests)) p.pests = []
+  });
+  (state.sales || []).forEach(s => {
+    if (s.price == null) s.price = 0;
+    if (!s.dateSold) s.dateSold = s.tsSold ? new Date(s.tsSold).toISOString().slice(0, 10) : today();
+    if (!s.tsSold) s.tsSold = new Date(s.dateSold + 'T12:00').getTime();
+    if (!Array.isArray(s.photos)) s.photos = s.photo ? [{ id: uid(), src: s.photo, ts: s.tsSold }] : []
   });
   (state.incubator || []).forEach(it => {
     if (it.photo === undefined) it.photo = null;
@@ -729,12 +799,13 @@ function migrate() {
   });
   const _ft = _fs.theme;
   state.theme = state.theme || {};
-  ["logo", "baseIcon", "incEsqueje", "incSemilla", "appName", "colors", "fonts", "customFonts", "text"].forEach(k => {
+  ["logo", "baseIcon", "incEsqueje", "incSemilla", "appName", "colors", "fonts", "customFonts", "customColors", "text"].forEach(k => {
     if (state.theme[k] == null) state.theme[k] = _ft[k]
   });
   if (typeof state.theme.fonts !== "object") state.theme.fonts = _ft.fonts;
   if (typeof state.theme.colors !== "object") state.theme.colors = _ft.colors;
   if (typeof state.theme.text !== "object") state.theme.text = _ft.text;
+  if (!Array.isArray(state.theme.customColors)) state.theme.customColors = [];
   if (!state.profile.lang) state.profile.lang = "es"
 }
 let _saving = false,
@@ -821,6 +892,18 @@ function esc(s) {
   } [c]))
 }
 
+/* Aparición escalonada (stagger) para listas: cada tarjeta llega con un pequeño retardo */
+let _stg = 0;
+
+function staggerReset() {
+  _stg = 0
+}
+
+function stagger(html) {
+  const d = Math.min(_stg++, 14) * 30;
+  return `<div class="stagger" style="animation-delay:${d}ms">${html}</div>`
+}
+
 function sameMonth(s) {
   if (!s) return false;
   return s.slice(0, 7) === today().slice(0, 7)
@@ -890,6 +973,12 @@ function checkLevel() {
 function syncHeader() {
   const sp = $('#streakPill');
   if (sp) sp.innerHTML = ic('flame', 16) + "<span>" + state.profile.streak + "</span>";
+  const av = $('#hdrAvatar');
+  if (av) {
+    const a = state.profile.avatar;
+    av.style.background = a ? `url('${a}') center/cover` : 'linear-gradient(135deg,var(--accent),var(--accent2))';
+    av.innerHTML = a ? '' : ic('user', 16)
+  }
   if (typeof refreshUndo === "function") refreshUndo()
 }
 
@@ -987,12 +1076,12 @@ const NAV = [{
     n: "Incubar",
     ic: '<path d="M9 3h6M10 3v6l-4 9a2 2 0 002 2.8h8A2 2 0 0018 18l-4-9V3"/>'
   }, {
-    k: "perfil",
-    n: "Perfil",
-    ic: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>'
+    k: "ventas",
+    n: "Ventas",
+    ic: '<path d="M6 8h12l-1 12H7L6 8z"/><path d="M9 8V6a3 3 0 016 0v2"/>'
   }
 ];
-const MAIN = ["inicio", "plantas", "incubadora", "perfil"];
+const MAIN = ["inicio", "plantas", "incubadora", "ventas"];
 let current = "inicio";
 
 function renderNav() {
@@ -1009,6 +1098,7 @@ function show(k, dir) {
   }
   current = k;
   renderNav();
+  syncHeader();
   const s = $('#screen');
   s.classList.remove('anim-up', 'anim-l', 'anim-r');
   void s.offsetWidth;
@@ -1019,6 +1109,7 @@ function show(k, dir) {
     tienda: scrTienda,
     cementerio: scrCementerio,
     tareas: scrTareas,
+    ventas: scrVentas,
     perfil: scrPerfil
   } [k] || scrInicio)();
   s.classList.add(dir === 'l' ? 'anim-l' : dir === 'r' ? 'anim-r' : 'anim-up');
@@ -1035,6 +1126,7 @@ function refreshScreen() {
       tienda: scrTienda,
       cementerio: scrCementerio,
       tareas: scrTareas,
+      ventas: scrVentas,
       perfil: scrPerfil
     } [current] || scrInicio)()
   } catch (e) {}
@@ -1081,6 +1173,7 @@ function scrInicio() {
   const sinRev = P.filter(p => !isRevToday(p)).length,
     revHoy = P.filter(p => isRevToday(p)).length,
     enVenta = P.filter(p => p.forSale).length,
+    vendidas = (state.sales||[]).length,
     riesgo = P.filter(p => plantHealth(p) !== 'good').length,
     pend = state.tasks.filter(t => !t.done).length,
     r = state.profile,
@@ -1099,6 +1192,7 @@ function scrInicio() {
     ${tile('Revisadas hoy',revHoy,"J.goPlants('revhoy')",total?('de '+total):'—',revHoy>=total&&total?'good':'warn')}
     ${tile('Sin revisar hoy',sinRev,"J.goPlants('sinrevhoy')",sinRev?'pendientes':'al día',sinRev?'warn':'good')}
     ${tile('En venta',enVenta,"J.goPlants('venta')",enVenta?'a la venta':'ninguna',enVenta?'warn':'good')}
+    ${tile('Ventas',vendidas,"J.show('ventas')",vendidas?'consultar historial':'sin ventas aún','')}
     ${tile('En riesgo',riesgo,"J.goPlants('riesgo')",riesgo?'atención':'todo bien',riesgo?'bad':'good')}
     ${tile('Tareas',pend,"J.show('tareas')",pend?'pendientes':'al día',pend?'warn':'good')}</div>
   ${dashChart()}
@@ -1258,12 +1352,24 @@ function selectAllVisible() {
   updateSelChrome()
 }
 
-function batch(kind) {
+function batchLocation() {
   const ids = [...selSet];
   if (!ids.length) {
     toast("No has seleccionado nada", "bad");
     return
   }
+  const opts = state.profile.locations.map(l => `<div class="sheet-btn" onclick="J.batch('location','${encodeURIComponent(l)}')"><span class="ico">${ic('pin',20)}</span> ${esc(l)}</div>`).join('');
+  openModal(`<h3>¿Dónde quieres trasladar las plantas?</h3><div class="mini" style="margin-bottom:14px">${ids.length} planta${ids.length===1?'':'s'} seleccionada${ids.length===1?'':'s'}. Solo cambiará su ubicación; conservarán todos sus demás datos.</div>
+  <div class="sheet-btn" onclick="J.batch('location','')"><span class="ico">${ic('ban',20)}</span> Sin ubicación</div>${opts}`)
+}
+
+function batch(kind, loc) {
+  const ids = [...selSet];
+  if (!ids.length) {
+    toast("No has seleccionado nada", "bad");
+    return
+  }
+  loc = loc ? decodeURIComponent(loc) : '';
   const t = today();
   let n = 0;
   ids.forEach(id => {
@@ -1282,6 +1388,8 @@ function batch(kind) {
       p.lastReview = t
     } else if (kind === 'transplant') {
       p.lastTransplant = t
+    } else if (kind === 'location') {
+      p.location = loc || ''
     }
   });
   let xp = 0;
@@ -1313,11 +1421,13 @@ function batch(kind) {
     fert: 'abonadas',
     clean: 'limpiadas',
     review: 'revisadas',
-    transplant: 'trasplantadas'
+    transplant: 'trasplantadas',
+    location: loc ? ('trasladadas a «' + loc + '»') : 'movidas a sin ubicación'
   } [kind];
   selMode = false;
   selSet.clear();
-  scrPlantas();
+  if (kind === 'location') closeModal();
+  else scrPlantas();
   toast(n + ' ' + done + (xp ? (' · +' + xp + ' XP') : ''), xp ? 'pts' : '')
 }
 
@@ -1340,7 +1450,7 @@ function selBar() {
   if (!selMode) return '';
   const n = selSet.size;
   const allSel = _visPlantIds.length > 0 && _visPlantIds.every(id => selSet.has(id));
-  return `<div class="selbar-spacer"></div><div class="selbar"><div class="selbar-top"><button class="selbar-x" onclick="J.exitSel()">${ic('ban',18)}</button><div class="selbar-count" id="selCount">${n} seleccionada${n===1?'':'s'}</div><button class="btn btn-ghost btn-sm" id="selAllBtn" onclick="J.selectAllVisible()">${allSel?'Ninguna':'Todas'}</button></div><div class="selbar-actions"><button class="selbar-act" onclick="J.batch('water')">${ic('water',20)}<span>Regar</span></button><button class="selbar-act" onclick="J.batch('fert')">${ic('fert',20)}<span>Abonar</span></button><button class="selbar-act" onclick="J.batch('clean')">${ic('brush',20)}<span>Limpiar</span></button><button class="selbar-act" onclick="J.batch('review')">${ic('eye',20)}<span>Revisar</span></button><button class="selbar-act" onclick="J.batch('transplant')">${ic('pot',20)}<span>Trasplante</span></button></div></div>`
+  return `<div class="selbar-spacer"></div><div class="selbar"><div class="selbar-top"><button class="selbar-x" onclick="J.exitSel()">${ic('ban',18)}</button><div class="selbar-count" id="selCount">${n} seleccionada${n===1?'':'s'}</div><button class="btn btn-ghost btn-sm" id="selAllBtn" onclick="J.selectAllVisible()">${allSel?'Ninguna':'Todas'}</button></div><div class="selbar-actions"><button class="selbar-act" onclick="J.batch('water')">${ic('water',20)}<span>Regar</span></button><button class="selbar-act" onclick="J.batch('fert')">${ic('fert',20)}<span>Abonar</span></button><button class="selbar-act" onclick="J.batch('clean')">${ic('brush',20)}<span>Limpiar</span></button><button class="selbar-act" onclick="J.batch('review')">${ic('eye',20)}<span>Revisar</span></button><button class="selbar-act" onclick="J.batch('transplant')">${ic('pot',20)}<span>Trasplante</span></button><button class="selbar-act" onclick="J.batchLocation()">${ic('pin',20)}<span>Ubicación</span></button></div></div>`
 }
 
 function applySort(P) {
@@ -1375,7 +1485,8 @@ function computePlantsBody() {
     const l = p.location || 'Sin ubicación';
     (g[l] = g[l] || []).push(p)
   });
-  return state.plants.length === 0 ? emptyBox('sprout', 'Tu jardín está vacío', 'Añade tu primera planta con el botón +.') : (P.length === 0 ? emptyBox('search', 'Sin resultados', 'Prueba otro filtro o búsqueda.') : (plantSort ? P.map(plantCard).join('') : Object.keys(g).sort().map(l => `<div class="group-h line">${esc(l)}</div>` + g[l].map(plantCard).join('')).join('')))
+  staggerReset();
+  return state.plants.length === 0 ? emptyBox('sprout', 'Tu jardín está vacío', 'Añade tu primera planta con el botón +.') : (P.length === 0 ? emptyBox('search', 'Sin resultados', 'Prueba otro filtro o búsqueda.') : (plantSort ? P.map(p => stagger(plantCard(p))).join('') : Object.keys(g).sort().map(l => `<div class="group-h line">${esc(l)}</div>` + g[l].map(p => stagger(plantCard(p))).join('')).join('')))
 }
 
 function renderPlantsList() {
@@ -1438,7 +1549,7 @@ function plantCard(p) {
     <div class="pic">${iconHTML(p,64)}</div>
     <div class="pc-body"><div class="pc-name">${esc(p.name||'Sin nombre')} ${p.stage==='legendaria'?`<span class="chip gold">${ic('crown',12)}</span>`:''}${p.fromProp?`<span class="chip">${ic(p.fromProp==='esqueje'?'scissors':'seed',11)} ${p.fromProp==='esqueje'?'Esqueje':'Semilla'}</span>`:''}</div>
       <div class="pc-meta"><span>${ic('water',13)} ${relDay(p.lastWater)}</span>${p.location?`<span>${ic('pin',12)} ${esc(p.location)}</span>`:''}</div>
-      <div class="pc-meta" style="margin-top:7px"><span class="chip ${h}">${h==='good'?'Sana':h==='warn'?'Atención':'En riesgo'}</span>${p.flowering?`<span class="chip warn">Floración</span>`:''}${p.forSale?`<span class="chip">${ic('bag',11)} En venta</span>`:''}${isRevToday(p)?`<span class="chip good">${ic('eye',11)} Revisada</span>`:((rev===null||rev>7)?`<span class="chip">Revisar</span>`:'')}</div></div></div>`
+      <div class="pc-meta" style="margin-top:7px"><span class="chip ${h}">${h==='good'?'Sana':h==='warn'?'Atención':'En riesgo'}</span>${p.flowering?`<span class="chip warn">Floración</span>`:''}${p.forSale?`<span class="chip">${ic('bag',11)} En venta</span>`:''}${(function(){var ap=(p.tags||[]).includes('plaga')?activePest(p):null;return ap?`<span class="chip bad">${ic('bug',11)} ${esc(ap.name)}</span>`:''})()}${isRevToday(p)?`<span class="chip good">${ic('eye',11)} Revisada</span>`:((rev===null||rev>7)?`<span class="chip">Revisar</span>`:'')}</div></div></div>`
 }
 
 function toggleFav(id) {
@@ -1460,9 +1571,11 @@ function plantMenu(id) {
 /* Ficha */
 let fichaTab = "identidad";
 let _lastFichaId = null;
+let _fichaScrollReset = true;
 
 function openPlant(id) {
   fichaTab = "identidad";
+  _fichaScrollReset = true;
   renderFicha(id)
 }
 
@@ -1470,27 +1583,115 @@ function renderFicha(id) {
   const p = state.plants.find(x => x.id === id);
   if (!p) return show('plantas');
   _lastFichaId = id;
-  const content = fichaTab === 'identidad' ? fichaIdentidad(p) : fichaTab === 'estado' ? fichaEstado(p) : fichaFase(p);
-  openModal(`<div style="position:relative;text-align:center;margin-bottom:4px"><div style="display:inline-block">${iconHTML(p,118)}</div>
+  const content = fichaTab === 'identidad' ? fichaIdentidad(p) : fichaTab === 'estado' ? fichaEstado(p) : fichaTab === 'plagas' ? fichaPlagas(p) : fichaFase(p);
+  const modalEl = $('#modal');
+  const wasOpen = $('#overlay').classList.contains('on');
+  const prevScroll = modalEl ? modalEl.scrollTop : 0;
+  modalEl.innerHTML = '<div class="modal-grab"></div><button class="sheet-x" onclick="J.closeModal()" aria-label="Cerrar">' + ic('x', 19) + '</button>' + `<div style="position:relative;text-align:center;margin-bottom:4px"><div style="display:inline-block">${iconHTML(p,118)}</div>
       <div class="pencil" style="right:calc(50% - 76px);top:82px" onclick="J.openIconPicker('${p.id}')">${ic('brush',18)}</div></div>
     <h3 style="text-align:center;margin-top:12px;display:flex;align-items:center;justify-content:center;gap:7px">${esc(p.name||'Sin nombre')} ${p.favorite?`<span style="color:var(--gold)">${ic('star',16,'fill')}</span>`:''}</h3>
-    <div class="tabs">${['identidad','estado','fase'].map(t=>`<div class="tab ${fichaTab===t?'on':''}" onclick="J.fichaTabSet('${id}','${t}')">${({identidad:'Identidad',estado:'Estado',fase:'Fase vital'})[t]}</div>`).join('')}</div>${content}
+    <div class="tabs">${['identidad','estado','plagas','fase'].map(t=>`<div class="tab ${fichaTab===t?'on':''}" onclick="J.fichaTabSet('${id}','${t}')">${({identidad:'Identidad',estado:'Estado',plagas:'Plagas',fase:'Fase vital'})[t]}</div>`).join('')}</div>${content}
     <div class="row" style="margin-top:18px"><button class="btn btn-soft" onclick="J.openPlantForm('${p.id}')">${ic('pencil',16)} Editar</button><button class="btn btn-bad" onclick="J.killPlant('${p.id}')">${ic('grave',16)} Cementerio</button></div>
-    <button class="btn btn-ghost btn-block" style="margin-top:8px;color:var(--bad)" onclick="J.deletePlant('${p.id}')">${ic('trash',16)} Eliminar definitivamente</button>`)
+    <button class="btn btn-ghost btn-block" style="margin-top:8px;color:var(--bad)" onclick="J.deletePlant('${p.id}')">${ic('trash',16)} Eliminar definitivamente</button>`;
+  $('#overlay').classList.add('on');
+  /* Evita el salto al inicio del modal al tocar etiquetas/síntomas/plagas dentro de la misma pestaña */
+  modalEl.scrollTop = (_fichaScrollReset || !wasOpen) ? 0 : prevScroll;
+  _fichaScrollReset = false
 }
 
 function fichaTabSet(id, t) {
   fichaTab = t;
+  _fichaScrollReset = true;
   renderFicha(id)
 }
 
 function fichaIdentidad(p) {
   const f = (l, v) => `<div class="field"><label>${l}</label><div class="val">${v||'—'}</div></div>`;
-  return `${p.photo?`<div class="photo-box"><img src="${p.photo}"></div><div class="row" style="margin-bottom:14px"><button class="btn btn-soft btn-sm" onclick="J.addPhoto('${p.id}')">${ic('camera',15)} Cambiar foto</button><button class="btn btn-bad btn-sm" onclick="J.removePhoto('${p.id}')">${ic('trash',15)} Quitar foto</button></div>`:`<button class="btn btn-soft btn-block" style="margin-bottom:14px" onclick="J.addPhoto('${p.id}')">${ic('camera',16)} Añadir foto real</button>`}
-    <div class="mini" style="margin:-6px 2px 14px">El icono identifica a la planta en toda la app; la foto solo se ve aquí dentro.</div>
+  return `${photoHistorySection(p)}
     <div class="grid2">${f('Ubicación',esc(p.location))}${f('Origen',esc(p.origin))}</div><div class="grid2">${f('Adquisición',fmtDate(p.acquired))}${f('Sustrato',esc(p.substrate))}</div>
     ${p.forSale?`<div class="chip" style="margin:-4px 0 12px">${ic('bag',13)} En venta</div>`:''}
     ${p.notes?`<div class="field"><label>Notas</label><div class="val" style="font-weight:500">${esc(p.notes)}</div></div>`:''}`
+}
+
+/* ===== Historial fotográfico de crecimiento ===== */
+function fmtDateTime(ts) {
+  if (!ts) return '—';
+  const d = new Date(ts);
+  const dd = d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+  const hh = d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+  return `${dd} · ${hh}`
+}
+
+function photoHistorySection(p) {
+  const photos = (p.photos || []).slice().sort((a, b) => b.ts - a.ts);
+  const cover = photos[0];
+  return `<div class="field"><label>Fotografías (historial de crecimiento)</label>
+    ${cover?`<div class="photo-box"><img src="${cover.src}"></div><div class="mini" style="margin:-4px 2px 10px">Última: ${fmtDateTime(cover.ts)}</div>`:''}
+    <button class="btn btn-soft btn-block" style="margin-bottom:12px" onclick="J.addPhoto('${p.id}')">${ic('camera',16)} Añadir fotografía</button>
+    ${photos.length?`<div class="photo-grid">${photos.map(ph=>`<div class="photo-thumb"><img src="${ph.src}" onclick="J.viewPhoto('${p.id}','${ph.id}')"><div class="photo-thumb-dt">${fmtDateTime(ph.ts)}</div>
+      <div class="photo-thumb-actions"><span class="icon-btn" onclick="event.stopPropagation();J.downloadPhoto('${p.id}','${ph.id}')">${ic('download',15)}</span><span class="icon-btn" onclick="event.stopPropagation();J.removePhoto('${p.id}','${ph.id}')">${ic('trash',15)}</span></div></div>`).join('')}</div>`:`<div class="mini">Aún no hay fotografías. La primera que subas empezará el historial de crecimiento.</div>`}
+    <div class="mini" style="margin:10px 2px 0">El icono identifica a la planta en toda la app; las fotografías solo se ven aquí dentro.</div></div>`
+}
+
+function addPhoto(id) {
+  pickFile(d => {
+    const p = state.plants.find(x => x.id === id);
+    if (!p) return;
+    if (!Array.isArray(p.photos)) p.photos = [];
+    const entry = { id: uid(), src: d, ts: Date.now() };
+    p.photos.push(entry);
+    p.photo = d;
+    save();
+    renderFicha(id);
+    toast("Foto añadida")
+  })
+}
+
+function removePhoto(id, photoId) {
+  const p = state.plants.find(x => x.id === id);
+  if (!p) return;
+  if (!photoId) {
+    p.photo = null;
+    save();
+    renderFicha(id);
+    return
+  }
+  confirmModal("Eliminar fotografía", "¿Eliminar esta fotografía del historial? No se puede deshacer.", () => {
+    p.photos = (p.photos || []).filter(ph => ph.id !== photoId);
+    const sorted = p.photos.slice().sort((a, b) => b.ts - a.ts);
+    p.photo = sorted.length ? sorted[0].src : null;
+    save();
+    closeModal2();
+    renderFicha(id);
+    toast("Foto eliminada")
+  }, true)
+}
+
+function downloadPhoto(id, photoId) {
+  const p = state.plants.find(x => x.id === id);
+  const ph = p && (p.photos || []).find(x => x.id === photoId);
+  if (!ph) return;
+  try {
+    const a = document.createElement('a');
+    a.href = ph.src;
+    const ext = (ph.src.split(';')[0].split('/')[1] || 'jpg').replace('jpeg', 'jpg');
+    const dt = new Date(ph.ts).toISOString().slice(0, 10);
+    a.download = (p.name || 'planta').replace(/[^a-z0-9áéíóúñ_-]+/gi, '_') + '-' + dt + '.' + ext;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => a.remove(), 700)
+  } catch (e) {
+    toast("No se pudo descargar", "bad")
+  }
+}
+
+function viewPhoto(id, photoId) {
+  const p = state.plants.find(x => x.id === id);
+  const ph = p && (p.photos || []).find(x => x.id === photoId);
+  if (!ph) return;
+  openModal2(`<div class="photo-box" style="margin-bottom:12px"><img src="${ph.src}"></div>
+    <div class="mini" style="text-align:center;margin-bottom:14px">${fmtDateTime(ph.ts)}</div>
+    <div class="row"><button class="btn btn-soft" onclick="J.downloadPhoto('${id}','${photoId}')">${ic('download',15)} Descargar</button><button class="btn btn-bad" onclick="J.closeModal2();J.removePhoto('${id}','${photoId}')">${ic('trash',15)} Eliminar</button></div>`)
 }
 
 function fichaEstado(p) {
@@ -1510,11 +1711,84 @@ function fichaEstado(p) {
     <input type="date" class="inp" style="margin-top:11px" value="${p.lastClean||''}" onchange="J.setClean('${p.id}',this.value)"></div>
   <div class="togrow"><div style="display:flex;align-items:center;gap:9px">${ic('flower',18,'')}<div><div style="font-weight:700">En floración</div><div class="mini">Marca si está florecida</div></div></div><div class="toggle ${p.flowering?'on':''}" onclick="J.toggleFlower('${p.id}')"></div></div>
   <div class="togrow"><div style="display:flex;align-items:center;gap:9px">${ic('bag',18,'')}<div><div style="font-weight:700">En venta</div><div class="mini">Márcala si la tienes a la venta</div></div></div><div class="toggle ${p.forSale?'on':''}" onclick="J.toggleSale('${p.id}')"></div></div>
+  ${p.forSale?`<div class="field"><label>Precio de venta (€)</label><input type="number" min="0" step="0.01" class="inp" value="${p.salePrice!=null?p.salePrice:''}" placeholder="0.00" onchange="J.setSalePrice('${p.id}',this.value)"></div>
+  <button class="btn btn-primary btn-block" style="margin-bottom:14px" onclick="J.sellPlant('${p.id}')">${ic('bag',16)} Marcar como vendida</button>`:''}
   ${isRevToday(p)?`<div class="row" style="margin:13px 0"><button class="btn btn-soft" style="color:var(--good)" onclick="J.review('${p.id}')">${ic('eye',16)} Revisada hoy ✓</button><button class="btn btn-ghost btn-sm" onclick="J.unreview('${p.id}')">${ic('ban',15)} Quitar</button></div>`:`<button class="btn btn-soft btn-block" style="margin:13px 0" onclick="J.review('${p.id}')">${ic('eye',16)} Marcar como revisada hoy</button>`}
   <div class="field"><label>Sustrato</label><select id="fe_sub_${p.id}" class="inp" onchange="J.setSubstrate('${p.id}',this.value)"><option value="" ${p.substrate?'':'selected'}>Sin especificar</option>${getSubs().map(su=>`<option ${p.substrate===su?'selected':''}>${esc(su)}</option>`).join('')}${(p.substrate&&getSubs().indexOf(p.substrate)<0)?`<option selected>${esc(p.substrate)}</option>`:''}<option value="__new">+ Nuevo sustrato...</option></select></div>
-  <div class="field"><label>Etiquetas de salud</label><div class="tagrow">${getTags().map(t=>`<div class="tagsel ${(p.tags||[]).includes(t.k)?'on '+(t.c||''):''}" onclick="J.toggleTag('${p.id}','${t.k}')">${esc(t.n)}</div>`).join('')}</div></div>
-  <div class="field"><label>Síntomas</label><div class="tagrow">${getSympt().map((s,si)=>`<div class="tagsel ${(p.symptoms||[]).includes(s.n)?'on '+(s.c||'warn'):''}" onclick="J.toggleSymptAt('${p.id}',${si})">${esc(s.n)}</div>`).join('')}</div></div>
+  <div class="field"><label>Etiquetas de salud</label><div class="tagrow">${getTags().map(t=>{const on=(p.tags||[]).includes(t.k);return `<div class="tagsel ${on?'on '+tagColorClass(t.c):''}"${on?tagColorAttrs(t.c):''} onclick="J.toggleTag('${p.id}','${t.k}')">${esc(t.n)}</div>`}).join('')}</div></div>
+  ${pestChipRow(p)}
+  <div class="field"><label>Síntomas</label><div class="tagrow">${getSympt().map((s,si)=>{const on=(p.symptoms||[]).includes(s.n);return `<div class="tagsel ${on?'on '+tagColorClass(s.c||'warn'):''}"${on?tagColorAttrs(s.c||'warn'):''} onclick="J.toggleSymptAt('${p.id}',${si})">${esc(s.n)}</div>`}).join('')}</div></div>
   <div class="field"><label>Notas / alertas</label><textarea class="inp" oninput="J.setNotes('${p.id}',this.value)" placeholder="Ej: últimamente bebe mucha agua...">${esc(p.notes)}</textarea></div>`
+}
+
+/* ===== Plagas ===== */
+function activePest(p) {
+  const list = p.pests || [];
+  for (let i = list.length - 1; i >= 0; i--) if (!list[i].recovered) return list[i];
+  return null
+}
+
+function pestChipRow(p) {
+  if (!(p.tags || []).includes('plaga')) return '';
+  const pt = state.profile.pestTag || { n: 'Plaga detectada', c: 'bad' };
+  const ap = activePest(p);
+  return `<div class="field"><label>${esc(pt.n)}</label>
+    <div class="tagrow">${ap?`<span class="chip ${pt.c||'bad'}">${ic('bug',12)} ${esc(ap.name)}</span>`:`<span class="mini">Sin plaga concreta indicada</span>`}
+    <button class="btn btn-soft btn-sm" onclick="J.addPest('${p.id}')">${ic('plus',13)} ${ap?'Registrar otra':'Indicar plaga'}</button></div></div>`
+}
+
+function fichaPlagas(p) {
+  const list = (p.pests || []).slice().sort((a, b) => (b.detected || '').localeCompare(a.detected || ''));
+  if (!list.length) return `<div class="empty"><div class="e">${ic('bug',44)}</div><p>¡Qué suerte, esta planta no ha tenido ninguna plaga!</p></div>
+    <button class="btn btn-soft btn-block" onclick="J.addPest('${p.id}')">${ic('plus',15)} Registrar una plaga</button>`;
+  return list.map(pe => `<div class="card" style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+      <div><div style="font-weight:800">${esc(pe.name)}</div><div class="mini" style="margin-top:3px">Fecha de plaga señalada: ${fmtDate(pe.detected)}</div>${pe.recovered?`<div class="mini">Recuperada: ${fmtDate(pe.recovered)}</div>`:''}</div>
+      <span class="chip ${pe.recovered?'good':'bad'}">${pe.recovered?'Recuperada':'Activa'}</span></div>
+      ${pe.recovered?'':`<button class="btn btn-soft btn-sm btn-block" style="margin-top:10px" onclick="J.recoverPest('${p.id}','${pe.id}')">${ic('check',14)} Marcar como recuperada</button>`}</div>`).join('') +
+    `<button class="btn btn-soft btn-block" style="margin-top:6px" onclick="J.addPest('${p.id}')">${ic('plus',15)} Registrar otra plaga</button>`
+}
+
+function addPest(id) {
+  const p = state.plants.find(x => x.id === id);
+  if (!p) return;
+  inputModal("Registrar plaga", [{
+    id: 'name',
+    label: 'Plaga (ej: Thrips, Cochinilla, Araña roja...)',
+    placeholder: 'Nombre de la plaga'
+  }, {
+    id: 'date',
+    label: 'Fecha de plaga señalada',
+    type: 'date',
+    value: today()
+  }], v => {
+    if (!v.name) return;
+    p.pests = p.pests || [];
+    p.pests.push({
+      id: uid(),
+      name: v.name,
+      detected: v.date || today(),
+      recovered: null
+    });
+    if (!(p.tags || []).includes('plaga')) {
+      p.tags = p.tags || [];
+      p.tags.push('plaga')
+    }
+    save();
+    fichaTab = 'plagas';
+    renderFicha(id);
+    toast("Plaga registrada")
+  })
+}
+
+function recoverPest(id, peId) {
+  const p = state.plants.find(x => x.id === id);
+  if (!p) return;
+  const pe = (p.pests || []).find(x => x.id === peId);
+  if (!pe) return;
+  pe.recovered = today();
+  save();
+  renderFicha(id);
+  toast("Marcada como recuperada")
 }
 
 function fichaFase(p) {
@@ -1758,24 +2032,6 @@ function setPhase(id, k) {
   renderFicha(id)
 }
 
-function addPhoto(id) {
-  pickFile(d => {
-    const p = state.plants.find(x => x.id === id);
-    p.photo = d;
-    save();
-    renderFicha(id);
-    toast("Foto añadida")
-  })
-}
-
-function removePhoto(id) {
-  const p = state.plants.find(x => x.id === id);
-  p.photo = null;
-  save();
-  renderFicha(id);
-  toast("Foto quitada")
-}
-
 function killPlant(id) {
   const p = state.plants.find(x => x.id === id);
   openModal(`<h3>Mover al cementerio</h3><div class="mini" style="margin-bottom:14px">${esc(p.name)} se moverá al cementerio conservando su recuerdo.</div>
@@ -1798,7 +2054,8 @@ function confirmKill(id) {
     died: today(),
     iconId: p.iconId || 'base',
     stage: p.stage,
-    photo: p.photo
+    photo: p.photo,
+    photos: p.photos || []
   });
   state.plants.splice(i, 1);
   save();
@@ -1909,7 +2166,10 @@ function savePlant(id) {
       fromProp: null,
       favorite: false,
       waterLog: [],
-      photo: null
+      photo: null,
+      photos: [],
+      pests: [],
+      salePrice: null
     });
     recomputeBadges();
     save();
@@ -1992,7 +2252,8 @@ function delIcon(iid) {
 function scrTareas() {
   const pend = state.tasks.filter(t => !t.done),
     done = state.tasks.filter(t => t.done);
-  $('#screen').innerHTML = `<div class="lead-label">Cuidados</div><div class="s-title">Tareas</div><div class="s-sub">${pend.length} pendientes</div>${pend.length?pend.map(taskRow).join(''):emptyBox('checkc','Sin tareas pendientes','Pulsa + para añadir una tarea.')}${done.length?`<div class="group-h line">Completadas</div>`+done.map(taskRow).join(''):''}`
+  staggerReset();
+  $('#screen').innerHTML = `<div class="lead-label">Cuidados</div><div class="s-title">Tareas</div><div class="s-sub">${pend.length} pendientes</div>${pend.length?pend.map(t=>stagger(taskRow(t))).join(''):emptyBox('checkc','Sin tareas pendientes','Pulsa + para añadir una tarea.')}${done.length?`<div class="group-h line">Completadas</div>`+done.map(t=>stagger(taskRow(t))).join(''):''}`
 }
 
 function taskRow(t) {
@@ -2051,7 +2312,8 @@ function incIcon(it) {
 
 function scrIncubadora() {
   const I = state.incubator;
-  $('#screen').innerHTML = `<div class="lead-label">Propagación</div><div class="s-title">Incubadora</div><div class="s-sub">${I.length} propagaciones en curso</div>${I.length?I.map(incCard).join(''):emptyBox('flask','Incubadora vacía','Añade un esqueje o una semilla con el botón +.')}`
+  staggerReset();
+  $('#screen').innerHTML = `<div class="lead-label">Propagación</div><div class="s-title">Incubadora</div><div class="s-sub">${I.length} propagaciones en curso</div>${I.length?I.map(it=>stagger(incCard(it))).join(''):emptyBox('flask','Incubadora vacía','Añade un esqueje o una semilla con el botón +.')}`
 }
 
 function incCard(it) {
@@ -2161,7 +2423,10 @@ function promote(id) {
     waterLog: [],
     substrate: it.substrate || '',
     forSale: false,
-    photo: null
+    photo: null,
+    photos: [],
+    pests: [],
+    salePrice: null
   });
   state.incubator.splice(i, 1);
   state.counters.promoTotal++;
@@ -2294,9 +2559,10 @@ function buy(cat, id) {
 /* Cementerio */
 function scrCementerio() {
   const C = state.cemetery;
+  staggerReset();
   $('#screen').innerHTML = `<div class="lead-label">En memoria</div><div class="s-title">Cementerio</div><div class="s-sub">En memoria · ${C.length}</div>
   <button class="btn btn-soft btn-block" style="margin-bottom:14px" onclick="J.openGraveForm()">${ic('plus',16)} Añadir recuerdo antiguo</button>
-  ${C.length?`<div class="grid2">${C.map(graveCard).join('')}</div>`:emptyBox('grave','Cementerio vacío','Aquí se guardarán tus plantas perdidas.')}`
+  ${C.length?`<div class="grid2">${C.map(g=>stagger(graveCard(g))).join('')}</div>`:emptyBox('grave','Cementerio vacío','Aquí se guardarán tus plantas perdidas.')}`
 }
 
 function graveCard(g) {
@@ -2337,7 +2603,10 @@ function restoreGrave(id) {
     legendaryClaimed: false,
     favorite: false,
     waterLog: [],
-    photo: g.photo
+    photo: g.photo,
+    photos: g.photos || (g.photo ? [{ id: uid(), src: g.photo, ts: Date.now() }] : []),
+    salePrice: null,
+    pests: []
   });
   state.cemetery.splice(i, 1);
   save();
@@ -2380,6 +2649,217 @@ function saveGrave() {
   show('cementerio')
 }
 
+/* ===== Ventas ===== */
+let ventaTab = 'activas',
+  ventaSort = 'fecha';
+
+function fmtPrice(n) {
+  if (n == null || !isFinite(n)) return '—';
+  const v = Math.round(n * 100) / 100;
+  const str = Number.isInteger(v) ? String(v) : v.toFixed(2);
+  return str.replace('.', ',') + ' €'
+}
+
+function monthDiff(fromTs, toTs) {
+  const a = new Date(fromTs),
+    b = new Date(toTs);
+  return (b.getFullYear() - a.getFullYear()) * 12 + (b.getMonth() - a.getMonth())
+}
+
+function scrVentas() {
+  const activas = state.plants.filter(p => p.forSale);
+  const vendidas = (state.sales || []).slice();
+  if (ventaSort === 'precio') vendidas.sort((a, b) => (b.price || 0) - (a.price || 0));
+  else vendidas.sort((a, b) => (b.tsSold || 0) - (a.tsSold || 0));
+  const totalVendido = vendidas.reduce((a, s) => a + (s.price || 0), 0);
+  const mesActual = vendidas.filter(s => sameMonth(s.dateSold)).reduce((a, s) => a + (s.price || 0), 0);
+  $('#screen').innerHTML = `<div class="lead-label">Inicio · Ventas</div><div class="s-title">Ventas</div><div class="s-sub">Todo lo que está o ha estado a la venta, de un vistazo</div>
+  <div class="card hero-card" style="margin-bottom:13px"><div class="lead-label" style="margin:0 0 11px">Dinero ganado</div>
+    <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><div style="font-weight:800;font-size:32px;letter-spacing:-1px">${fmtPrice(totalVendido)}</div>${mesActual?`<span class="statpill good">${ic('flame',12)} +${fmtPrice(mesActual)} este mes</span>`:''}</div>
+    <div class="mini" style="margin-top:5px">Suma del precio final de todas las plantas vendidas</div></div>
+  <div class="grid2" style="margin-bottom:13px">
+    ${tile('En venta',activas.length,"J.setVentaTab('activas')",activas.length?'disponibles':'ninguna ahora','')}
+    ${tile('Vendidas',vendidas.length,"J.setVentaTab('vendidas')",vendidas.length?'en Memoria':'aún ninguna','good')}</div>
+  <div class="tabs"><div class="tab ${ventaTab==='activas'?'on':''}" onclick="J.setVentaTab('activas')">${ic('bag',14)} En venta</div><div class="tab ${ventaTab==='vendidas'?'on':''}" onclick="J.setVentaTab('vendidas')">${ic('grave',14)} Memoria de ventas</div></div>
+  ${ventaTab==='activas'?ventaActivasBody(activas):ventaVendidasBody(vendidas,totalVendido)}`
+}
+
+function ventaActivasBody(activas) {
+  if (!activas.length) return emptyBox('bag', 'Nada en venta ahora mismo', 'Marca una planta como «En venta» desde su ficha (pestaña Estado) y aparecerá aquí.');
+  staggerReset();
+  return activas.map(p => stagger(saleActiveCard(p))).join('')
+}
+
+function saleActiveCard(p) {
+  return `<div class="card list-row" style="align-items:flex-start;flex-wrap:wrap">
+    <div class="pic" style="width:52px;height:52px;flex:none">${iconHTML(p,52)}</div>
+    <div class="grow">
+      <div style="font-weight:800;display:flex;align-items:center;gap:7px;flex-wrap:wrap">${esc(p.name||'Sin nombre')}${p.location?`<span class="mini">${ic('pin',11)} ${esc(p.location)}</span>`:''}</div>
+      <div class="field" style="margin:9px 0 0"><label>Precio (€)</label><input type="number" min="0" step="0.01" class="inp" value="${p.salePrice!=null?p.salePrice:''}" placeholder="0.00" onchange="J.setSalePrice('${p.id}',this.value)"></div>
+      <div class="row" style="margin-top:9px"><button class="btn btn-soft btn-sm" onclick="J.openPlant('${p.id}')">${ic('eye',14)} Ver ficha</button><button class="btn btn-primary btn-sm" onclick="J.sellPlant('${p.id}')">${ic('bag',14)} Marcar vendida</button></div>
+    </div></div>`
+}
+
+function ventaVendidasBody(vendidas, total) {
+  if (!vendidas.length) return emptyBox('grave', 'Aún no hay ventas en la Memoria', 'Cuando marques una planta como vendida, quedará aquí guardada para siempre: su información, su fecha de venta y su precio final.');
+  staggerReset();
+  const sortSel = `<select class="sortsel" onchange="J.setVentaSort(this.value)"><option value="fecha" ${ventaSort==='fecha'?'selected':''}>Más recientes</option><option value="precio" ${ventaSort==='precio'?'selected':''}>Mayor precio</option></select>`;
+  return `${salesChart(vendidas)}${salesYearBreakdown(vendidas)}
+  <div class="group-h line" style="display:flex;align-items:center;justify-content:space-between"><span>${ic('grave',13)} Memoria · plantas vendidas</span></div>
+  <div class="mini" style="margin:-2px 2px 12px">Estas plantas ya no forman parte de tu colección activa, pero su historial se conserva aquí para siempre.</div>
+  <div style="display:flex;justify-content:flex-end;margin-bottom:10px">${sortSel}</div>
+  <div class="grid2">${vendidas.map(s=>stagger(soldCard(s))).join('')}</div>`
+}
+
+function soldCard(s) {
+  return `<div class="sold" onclick="J.openSaleDetail('${s.id}')"><div class="badge">${ic('bag',16)}</div><div class="pic">${iconHTML({iconId:s.iconId||'base',stage:s.stage},56)}</div><div class="nm">${esc(s.name||'Sin nombre')}</div><div class="dt">${fmtDate(s.dateSold)}</div><div class="price">${fmtPrice(s.price)}</div></div>`
+}
+
+function salesChart(vendidas) {
+  if (!vendidas.length) return '';
+  const end = new Date(),
+    nb = 8,
+    buckets = new Array(nb).fill(0),
+    labels = [];
+  for (let i = 0; i < nb; i++) {
+    const d = new Date(end.getFullYear(), end.getMonth() - (nb - 1 - i), 1);
+    labels.push(d.toLocaleDateString('es-ES', { month: 'short' }))
+  }
+  vendidas.forEach(s => {
+    const t = s.tsSold || new Date((s.dateSold || today()) + 'T12:00').getTime();
+    const mAgo = monthDiff(t, end.getTime());
+    const idx = nb - 1 - mAgo;
+    if (idx >= 0 && idx < nb) buckets[idx] += (s.price || 0)
+  });
+  const max = Math.max(1, ...buckets),
+    W = 320,
+    H = 126,
+    pad = 10,
+    bw = (W - pad * 2) / nb;
+  let bars = '';
+  for (let i = 0; i < nb; i++) {
+    const bh = buckets[i] / max * (H - 44),
+      x = pad + i * bw + bw * 0.22,
+      y = H - 26 - bh,
+      w = bw * 0.56,
+      hot = i === nb - 1 && buckets[i] > 0;
+    bars += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${Math.max(bh,3).toFixed(1)}" rx="5" fill="${hot?'url(#shot)':'url(#scool)'}" ${hot?'filter="url(#sglow)"':''}/>`;
+    if (buckets[i] > 0) bars += `<text x="${(x+w/2).toFixed(1)}" y="${(y-6).toFixed(1)}" font-size="9" fill="${hot?'#6A4FBE':'#A99BC8'}" font-weight="${hot?'800':'600'}" text-anchor="middle">${fmtPrice(buckets[i])}</text>`;
+    bars += `<text x="${(x+w/2).toFixed(1)}" y="${H-8}" font-size="8.5" fill="#A99BC8" text-anchor="middle">${labels[i]}</text>`
+  }
+  return `<div class="card" style="margin-bottom:13px"><div class="lead-label" style="margin:0 0 2px">Por mes</div>
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:8px"><div style="font-weight:800;font-size:18px;letter-spacing:-.3px">Ingresos por venta</div></div>
+    <div class="chart-wrap"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><defs>
+      <linearGradient id="scool" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C8B9EE"/><stop offset="1" stop-color="#E6DEF6"/></linearGradient>
+      <linearGradient id="shot" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9277D6"/><stop offset="1" stop-color="#6A4FBE"/></linearGradient>
+      <filter id="sglow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+      <line x1="${pad}" y1="${H-26}" x2="${W-pad}" y2="${H-26}" stroke="#EBE4F7" stroke-width="1"/>${bars}</svg></div></div>`
+}
+
+function salesYearBreakdown(vendidas) {
+  const byYear = {};
+  vendidas.forEach(s => {
+    const y = (s.dateSold || '').slice(0, 4) || String(new Date(s.tsSold || Date.now()).getFullYear());
+    const m = s.dateSold ? (parseInt(s.dateSold.slice(5, 7), 10) - 1) : new Date(s.tsSold || Date.now()).getMonth();
+    byYear[y] = byYear[y] || { total: 0, months: new Array(12).fill(0) };
+    byYear[y].total += (s.price || 0);
+    if (m >= 0 && m < 12) byYear[y].months[m] += (s.price || 0)
+  });
+  const years = Object.keys(byYear).sort((a, b) => b - a);
+  if (!years.length) return '';
+  const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+  return `<div class="group-h line">Resumen por año</div>` + years.map(y => {
+    const yr = byYear[y];
+    const monthLines = yr.months.map((v, i) => v > 0 ? `<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12.5px"><span class="mini">${MESES[i]}</span><b>${fmtPrice(v)}</b></div>` : '').join('');
+    return `<div class="card" style="margin-bottom:11px"><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-weight:800;font-size:16px">${y}</div><div style="font-weight:800;color:var(--accent3)">${fmtPrice(yr.total)}</div></div>${monthLines?`<div style="margin-top:6px;border-top:1px solid var(--line);padding-top:4px">${monthLines}</div>`:''}</div>`
+  }).join('')
+}
+
+function setVentaTab(t) {
+  ventaTab = t;
+  scrVentas()
+}
+
+function setVentaSort(v) {
+  ventaSort = v;
+  scrVentas()
+}
+
+function setSalePrice(id, v) {
+  const p = state.plants.find(x => x.id === id);
+  if (!p) return;
+  const n = parseFloat(v);
+  p.salePrice = (v === '' || !isFinite(n)) ? null : n;
+  save()
+}
+
+function sellPlant(id) {
+  const p = state.plants.find(x => x.id === id);
+  if (!p) return;
+  openModal(`<h3>Marcar como vendida</h3><div class="mini" style="margin-bottom:14px">${esc(p.name)} pasará al historial de ventas. El precio quedará fijado y no se podrá modificar después.</div>
+  <div class="field"><label>Precio final (€)</label><input id="sale_price" type="number" min="0" step="0.01" class="inp" value="${p.salePrice!=null?p.salePrice:''}" placeholder="0.00"></div>
+  <button class="btn btn-primary btn-block" onclick="J.confirmSell('${id}')">Confirmar venta</button>`)
+}
+
+function confirmSell(id) {
+  const i = state.plants.findIndex(x => x.id === id);
+  if (i < 0) {
+    closeModal();
+    return
+  }
+  const p = state.plants[i];
+  const priceEl = $('#sale_price');
+  const price = (priceEl && priceEl.value !== '') ? (parseFloat(priceEl.value) || 0) : (p.salePrice || 0);
+  state.sales = state.sales || [];
+  state.sales.unshift({
+    id: uid(),
+    plantId: p.id,
+    name: p.name,
+    iconId: p.iconId || 'base',
+    stage: p.stage,
+    photos: p.photos || (p.photo ? [{ id: uid(), src: p.photo, ts: Date.now() }] : []),
+    photo: p.photo,
+    location: p.location,
+    origin: p.origin,
+    acquired: p.acquired,
+    notes: p.notes,
+    price: price,
+    dateSold: today(),
+    tsSold: Date.now()
+  });
+  state.plants.splice(i, 1);
+  save();
+  closeModal();
+  toast("Planta marcada como vendida");
+  show('ventas')
+}
+
+function openSaleDetail(id) {
+  const s = (state.sales || []).find(x => x.id === id);
+  if (!s) return;
+  const photos = (s.photos || []).slice().sort((a, b) => b.ts - a.ts);
+  openModal(`<div class="lead-label" style="text-align:center">${ic('grave',12)} Memoria de ventas</div>
+  <div style="text-align:center;margin-bottom:6px">${iconHTML({iconId:s.iconId||'base',stage:s.stage},96)}</div>
+  <h3 style="text-align:center">${esc(s.name||'Sin nombre')}</h3>
+  <div style="text-align:center;margin:-10px 0 16px"><span class="statpill good">${ic('bag',12)} Vendida por ${fmtPrice(s.price)}</span></div>
+  <div class="grid2">${(function(l,v){return `<div class="field"><label>${l}</label><div class="val">${v||'—'}</div></div>`})('Precio final',fmtPrice(s.price))}${(function(l,v){return `<div class="field"><label>${l}</label><div class="val">${v||'—'}</div></div>`})('Fecha de venta',fmtDate(s.dateSold))}</div>
+  <div class="grid2">${(function(l,v){return `<div class="field"><label>${l}</label><div class="val">${v||'—'}</div></div>`})('Ubicación',esc(s.location))}${(function(l,v){return `<div class="field"><label>${l}</label><div class="val">${v||'—'}</div></div>`})('Adquisición',fmtDate(s.acquired))}</div>
+  ${s.notes?`<div class="field"><label>Notas</label><div class="val" style="font-weight:500">${esc(s.notes)}</div></div>`:''}
+  ${photos.length?`<div class="field"><label>Fotografías</label><div class="photo-grid">${photos.map(ph=>`<div class="photo-thumb"><img src="${ph.src}"><div class="photo-thumb-dt">${fmtDateTime(ph.ts)}</div></div>`).join('')}</div></div>`:''}
+  <button class="btn btn-ghost btn-block" style="margin-top:6px;color:var(--bad)" onclick="J.removeSale('${id}')">${ic('trash',16)} Eliminar del historial</button>`)
+}
+
+function removeSale(id) {
+  confirmModal("Eliminar venta", "¿Eliminar este registro del historial de ventas para siempre? No se puede deshacer.", () => {
+    state.sales = (state.sales || []).filter(x => x.id !== id);
+    save();
+    closeModal2();
+    closeModal();
+    toast("Registro eliminado");
+    show('ventas')
+  }, true)
+}
+
 /* Perfil */
 function scrPerfil() {
   const r = state.profile,
@@ -2397,8 +2877,10 @@ function scrPerfil() {
   <div class="badge-grid">${BADGES.map(b=>`<div class="badge ${r.badges.includes(b.id)?'':'lock'}"><div class="e">${ic(b.i,26)}</div><div class="n">${b.n}</div></div>`).join('')}</div>
   <div class="group-h line">Ubicaciones</div><div class="card">${r.locations.map((l,i)=>`<div class="list-row" style="padding:9px 0;margin:0;border-bottom:1px solid var(--line)"><div class="grow" style="display:flex;align-items:center;gap:7px">${ic('pin',15)} ${esc(l)}</div><span class="icon-btn" onclick="J.renameLoc(${i})">${ic('pencil',16)}</span><span class="icon-btn" onclick="J.delLoc(${i})">${ic('trash',16)}</span></div>`).join('')}<button class="btn btn-soft btn-block btn-sm" style="margin-top:11px" onclick="J.addLoc()">${ic('plus',15)} Añadir ubicación</button></div>
   <div class="group-h line">Sustratos</div><div class="card">${(r.substrates||[]).map((l,i)=>`<div class="list-row" style="padding:9px 0;margin:0;border-bottom:1px solid var(--line)"><div class="grow" style="display:flex;align-items:center;gap:7px">${ic('pot',15)} ${esc(l)}</div><span class="icon-btn" onclick="J.renameSub(${i})">${ic('pencil',16)}</span><span class="icon-btn" onclick="J.delSub(${i})">${ic('trash',16)}</span></div>`).join('')}<button class="btn btn-soft btn-block btn-sm" style="margin-top:11px" onclick="J.addSub()">${ic('plus',15)} Añadir sustrato</button></div>
-  <div class="group-h line">Etiquetas de salud</div><div class="card"><div class="mini" style="margin-bottom:9px">Toca el color de una etiqueta para cambiarlo (verde/ámbar/rojo/neutro). Define qué tan grave es cada una.</div>${(r.healthTags||[]).map((t,i)=>`<div class="list-row" style="padding:9px 0;margin:0;border-bottom:1px solid var(--line)"><div class="grow" style="display:flex;align-items:center;gap:7px"><span class="tagsel on ${t.c||''}" onclick="J.cycleTagColor(${i})">${esc(t.n)}</span></div><span class="icon-btn" onclick="J.renameTag(${i})">${ic('pencil',16)}</span><span class="icon-btn" onclick="J.delTag(${i})">${ic('trash',16)}</span></div>`).join('')}<button class="btn btn-soft btn-block btn-sm" style="margin-top:11px" onclick="J.addTag()">${ic('plus',15)} Añadir etiqueta</button></div>
-  <div class="group-h line">Síntomas</div><div class="card"><div class="mini" style="margin-bottom:9px">Toca el color de un síntoma para cambiarlo. Así decides tú qué tan grave es cada uno.</div>${(r.symptoms||[]).map((s,i)=>`<div class="list-row" style="padding:9px 0;margin:0;border-bottom:1px solid var(--line)"><div class="grow" style="display:flex;align-items:center;gap:7px"><span class="tagsel on ${s.c||'warn'}" onclick="J.cycleSymptColor(${i})">${esc(s.n)}</span></div><span class="icon-btn" onclick="J.renameSympt(${i})">${ic('pencil',16)}</span><span class="icon-btn" onclick="J.delSympt(${i})">${ic('trash',16)}</span></div>`).join('')}<button class="btn btn-soft btn-block btn-sm" style="margin-top:11px" onclick="J.addSympt()">${ic('plus',15)} Añadir síntoma</button></div>
+  <div class="group-h line">Etiquetas de salud</div><div class="card"><div class="mini" style="margin-bottom:9px">Pulsa ${ic('pencil',12)} para editar el nombre y el color de cada etiqueta. Tocar la propia etiqueta la cicla rápido entre colores.</div>${(r.healthTags||[]).map((t,i)=>`<div class="list-row" style="padding:9px 0;margin:0;border-bottom:1px solid var(--line)"><div class="grow" style="display:flex;align-items:center;gap:7px"><span class="tagsel on ${tagColorClass(t.c)}"${tagColorAttrs(t.c)} onclick="J.cycleTagColor(${i})">${esc(t.n)}</span></div><span class="icon-btn" onclick="J.editTag(${i})">${ic('pencil',16)}</span><span class="icon-btn" onclick="J.delTag(${i})">${ic('trash',16)}</span></div>`).join('')}<button class="btn btn-soft btn-block btn-sm" style="margin-top:11px" onclick="J.addTag()">${ic('plus',15)} Añadir etiqueta</button></div>
+  <div class="group-h line">Etiqueta de plaga</div><div class="card"><div class="mini" style="margin-bottom:9px">Nombre y color de la etiqueta que aparece cuando una planta tiene la etiqueta de salud «Plaga» y una plaga concreta indicada.</div>
+    <div class="list-row" style="padding:9px 0;margin:0"><div class="grow" style="display:flex;align-items:center;gap:7px"><span class="tagsel on ${(r.pestTag&&r.pestTag.c)||'bad'}" onclick="J.cyclePestTagColor()">${esc((r.pestTag&&r.pestTag.n)||'Plaga detectada')}</span></div><span class="icon-btn" onclick="J.renamePestTag()">${ic('pencil',16)}</span></div></div>
+  <div class="group-h line">Síntomas</div><div class="card"><div class="mini" style="margin-bottom:9px">Pulsa ${ic('pencil',12)} para editar el nombre y el color de cada síntoma. Tocar el propio síntoma lo cicla rápido entre colores.</div>${(r.symptoms||[]).map((s,i)=>`<div class="list-row" style="padding:9px 0;margin:0;border-bottom:1px solid var(--line)"><div class="grow" style="display:flex;align-items:center;gap:7px"><span class="tagsel on ${tagColorClass(s.c||'warn')}"${tagColorAttrs(s.c||'warn')} onclick="J.cycleSymptColor(${i})">${esc(s.n)}</span></div><span class="icon-btn" onclick="J.editSympt(${i})">${ic('pencil',16)}</span><span class="icon-btn" onclick="J.delSympt(${i})">${ic('trash',16)}</span></div>`).join('')}<button class="btn btn-soft btn-block btn-sm" style="margin-top:11px" onclick="J.addSympt()">${ic('plus',15)} Añadir síntoma</button></div>
   <div class="group-h line">Actividad reciente</div><div class="card">${state.log.length?state.log.slice(0,8).map(l=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--line);font-size:13px"><span>${esc(l.t)}</span><b style="color:var(--accent3);display:inline-flex;align-items:center;gap:3px">${l.n>0?'+'+l.n+' XP':''}</b></div>`).join(''):'<div class="mini">Sin actividad todavía</div>'}</div>
   <div class="field" style="margin-top:16px"><label>Nombre del jardín</label><input class="inp" value="${esc(r.name)}" onchange="J.setName(this.value)"></div>
   <div class="group-h line">Idioma</div>
@@ -2415,6 +2897,7 @@ function changeAvatar() {
   pickFile(d => {
     state.profile.avatar = d;
     save();
+    syncHeader();
     scrPerfil()
   })
 }
@@ -2515,6 +2998,30 @@ function delSub(i) {
   }, true)
 }
 
+/* Etiqueta de plaga (nombre + color, configurable desde el perfil) */
+function renamePestTag() {
+  state.profile.pestTag = state.profile.pestTag || { n: 'Plaga detectada', c: 'bad' };
+  inputModal("Renombrar etiqueta de plaga", [{
+    id: 'v',
+    label: 'Nombre',
+    value: state.profile.pestTag.n
+  }], v => {
+    if (v.v) {
+      state.profile.pestTag.n = v.v;
+      save();
+      scrPerfil()
+    }
+  })
+}
+
+function cyclePestTagColor() {
+  state.profile.pestTag = state.profile.pestTag || { n: 'Plaga detectada', c: 'bad' };
+  const idx = COLOR_CYCLE.indexOf(state.profile.pestTag.c || '');
+  state.profile.pestTag.c = COLOR_CYCLE[(idx + 1) % COLOR_CYCLE.length];
+  save();
+  scrPerfil()
+}
+
 /* Síntomas */
 function addSympt() {
   inputModal("Nuevo síntoma", [{
@@ -2535,24 +3042,42 @@ function addSympt() {
 }
 
 function renameSympt(i) {
-  inputModal("Renombrar síntoma", [{
-    id: 'v',
-    label: 'Nombre',
-    value: state.profile.symptoms[i].n
-  }], v => {
-    if (v.v) {
-      const old = state.profile.symptoms[i].n;
-      state.profile.symptoms[i].n = v.v;
-      state.plants.forEach(p => {
-        if (p.symptoms) {
-          const k = p.symptoms.indexOf(old);
-          if (k >= 0) p.symptoms[k] = v.v
-        }
-      });
-      save();
-      scrPerfil()
+  editSympt(i)
+}
+
+function editSympt(i) {
+  const s = state.profile.symptoms[i];
+  if (!s) return;
+  const COLORS = colorOptions();
+  openModal2(`<h3>Editar síntoma</h3>
+    <div class="field"><label>Nombre</label><input id="es_name" class="inp" value="${esc(s.n)}" onchange="J.setSymptName(${i},this.value)"></div>
+    <div class="field"><label>Color</label><div class="tagrow">${COLORS.map(([c,lab])=>`<div class="tagsel on ${tagColorClass(c)} ${((s.c||'')===c)?'chosen':''}"${tagColorAttrs(c)} onclick="J.setSymptColor(${i},'${c}')">${((s.c||'')===c)?ic('check',12)+' ':''}${esc(lab)}</div>`).join('')}</div></div>
+    <div class="mini" style="margin-top:4px">¿Echas en falta un color? Se añade desde el panel secreto de Josie (toca 5 veces el logo).</div>
+    <button class="btn btn-primary btn-block" style="margin-top:10px" onclick="J.closeModal2()">Listo</button>`)
+}
+
+function setSymptName(i, v) {
+  const s = state.profile.symptoms[i];
+  if (!s || !v.trim()) return;
+  const old = s.n;
+  s.n = v.trim();
+  state.plants.forEach(p => {
+    if (p.symptoms) {
+      const k = p.symptoms.indexOf(old);
+      if (k >= 0) p.symptoms[k] = s.n
     }
-  })
+  });
+  save();
+  scrPerfil()
+}
+
+function setSymptColor(i, c) {
+  const s = state.profile.symptoms[i];
+  if (!s) return;
+  s.c = c;
+  save();
+  scrPerfil();
+  editSympt(i)
 }
 
 function delSympt(i) {
@@ -2606,17 +3131,35 @@ function addTag() {
 }
 
 function renameTag(i) {
-  inputModal("Renombrar etiqueta", [{
-    id: 'v',
-    label: 'Nombre',
-    value: state.profile.healthTags[i].n
-  }], v => {
-    if (v.v) {
-      state.profile.healthTags[i].n = v.v;
-      save();
-      scrPerfil()
-    }
-  })
+  editTag(i)
+}
+
+function editTag(i) {
+  const t = state.profile.healthTags[i];
+  if (!t) return;
+  const COLORS = colorOptions();
+  openModal2(`<h3>Editar etiqueta</h3>
+    <div class="field"><label>Nombre</label><input id="et_name" class="inp" value="${esc(t.n)}" onchange="J.setTagName(${i},this.value)"></div>
+    <div class="field"><label>Color</label><div class="tagrow">${COLORS.map(([c,lab])=>`<div class="tagsel on ${tagColorClass(c)} ${((t.c||'')===c)?'chosen':''}"${tagColorAttrs(c)} onclick="J.setTagColor(${i},'${c}')">${((t.c||'')===c)?ic('check',12)+' ':''}${esc(lab)}</div>`).join('')}</div></div>
+    <div class="mini" style="margin-top:4px">¿Echas en falta un color? Se añade desde el panel secreto de Josie (toca 5 veces el logo).</div>
+    <button class="btn btn-primary btn-block" style="margin-top:10px" onclick="J.closeModal2()">Listo</button>`)
+}
+
+function setTagName(i, v) {
+  const t = state.profile.healthTags[i];
+  if (!t || !v.trim()) return;
+  t.n = v.trim();
+  save();
+  scrPerfil()
+}
+
+function setTagColor(i, c) {
+  const t = state.profile.healthTags[i];
+  if (!t) return;
+  t.c = c;
+  save();
+  scrPerfil();
+  editTag(i)
 }
 
 function delTag(i) {
@@ -2942,6 +3485,9 @@ function admCombos() {
   <div class="field" style="margin-top:10px"><label>Nombre de la app</label><input class="inp" value="${esc(th.appName)}" onchange="J.admAppName(this.value)"></div>
   <div class="adm-item"><div class="pic">${miniImg(baseIcon())}</div><div style="flex:1"><b>Icono base</b><div class="mini">por defecto en toda planta</div></div><button class="btn btn-soft btn-sm" onclick="J.admBase()">Subir</button></div>
   <div class="group-h line">Colores</div><div class="card">${cvar('Acento principal','accent','#9277D6')}${cvar('Acento claro','accent2','#B7A4EC')}${cvar('Acento profundo','accent3','#6A4FBE')}${cvar('Color de texto base','ink','#2E2747')}${cvar('Fondo','bg','#FAF8FE')}${cvar('Dorado','gold','#C2A24A')}<button class="btn btn-ghost btn-sm btn-block" style="margin-top:8px" onclick="J.admColorReset()">Restaurar colores</button></div>
+  <div class="group-h line">Paleta de colores para etiquetas</div><div class="card"><div class="mini" style="margin-bottom:9px">Añade aquí los colores que quieras poder elegir para las etiquetas de salud y los síntomas desde el Perfil normal (por ejemplo, un rosa para «Floración»).</div>
+  ${(th.customColors||[]).map((c,i)=>`<div class="list-row" style="padding:8px 0;margin:0;border-bottom:1px solid var(--line)"><input type="color" class="swatch" value="${c.hex}" onchange="J.admPaletteColor(${i},this.value)"><input class="inp" style="padding:7px 9px;font-size:13px;flex:1;margin:0 8px" value="${esc(c.name)}" placeholder="Nombre del color" onchange="J.admPaletteName(${i},this.value)"><span class="icon-btn" onclick="J.admPaletteDel(${i})">${ic('trash',16)}</span></div>`).join('')||'<div class="mini" style="padding:6px 2px 2px">Aún no has añadido ningún color.</div>'}
+  <button class="btn btn-soft btn-block btn-sm" style="margin-top:11px" onclick="J.admPaletteAdd()">${ic('plus',15)} Añadir color</button></div>
   <div class="group-h line">Texto y tipografías</div><div class="card">${textRole('Logotipo','logo')}${textRole('Títulos','head')}${textRole('Texto general','body')}
     <button class="btn btn-soft btn-sm btn-block" style="margin-top:6px" onclick="J.admUploadFont()">${ic('plus',15)} Subir tipografía propia</button>
     <div class="mini" style="margin-top:6px">Para cada apartado puedes elegir tipografía, color, negrita y cursiva.</div></div>`
@@ -2973,6 +3519,45 @@ function admCombos() {
     applyTheme();
     save();
     renderAdmBody()
+  }
+
+  function admPaletteAdd() {
+    state.theme.customColors = state.theme.customColors || [];
+    state.theme.customColors.push({
+      id: uid(),
+      hex: '#E78FB3',
+      name: 'Nuevo color'
+    });
+    save();
+    renderAdmBody()
+  }
+
+  function admPaletteColor(i, v) {
+    const c = (state.theme.customColors || [])[i];
+    if (!c) return;
+    c.hex = v;
+    save();
+    renderAdmBody()
+  }
+
+  function admPaletteName(i, v) {
+    const c = (state.theme.customColors || [])[i];
+    if (!c || !v.trim()) return;
+    c.name = v.trim();
+    save();
+    renderAdmBody()
+  }
+
+  function admPaletteDel(i) {
+    const list = state.theme.customColors || [];
+    const removed = list[i];
+    if (!removed) return;
+    confirmModal("Eliminar color", "¿Eliminar «" + esc(removed.name || removed.hex) + "» de la paleta? Las etiquetas que ya lo usen conservarán el color, pero dejará de poder elegirse para otras.", () => {
+      list.splice(i, 1);
+      save();
+      closeModal2();
+      renderAdmBody()
+    }, true)
   }
 
   function admFont(k, v) {
@@ -3490,11 +4075,24 @@ function admCombos() {
       });
       if (typeof src.lastLogin === 'string' || src.lastLogin === null) P.lastLogin = src.lastLogin;
       P.locations = Array.isArray(src.locations) ? src.locations.filter(x => typeof x === 'string') : P.locations;
+      P.substrates = Array.isArray(src.substrates) ? src.substrates.filter(x => typeof x === 'string') : P.substrates;
       P.badges = Array.isArray(src.badges) ? src.badges.filter(x => typeof x === 'string') : [];
+      /* Etiquetas de salud y síntomas (incluye sus colores) — deben sobrevivir a un export/import */
+      if (Array.isArray(src.symptoms) && src.symptoms.length) {
+        P.symptoms = src.symptoms.map(s => (typeof s === 'string') ? { n: s, c: 'warn' } : { n: String(s.n || ''), c: s.c || '' }).filter(s => s.n)
+      }
+      if (Array.isArray(src.healthTags) && src.healthTags.length) {
+        P.healthTags = src.healthTags.map(t => ({ k: t.k || (t.n || '').toLowerCase().replace(/\s+/g, '-'), n: String(t.n || ''), c: t.c || '' })).filter(t => t.n)
+      }
+      if (src.pestTag && typeof src.pestTag === 'object') {
+        P.pestTag = { n: (typeof src.pestTag.n === 'string' && src.pestTag.n) ? src.pestTag.n : P.pestTag.n, c: typeof src.pestTag.c === 'string' ? src.pestTag.c : P.pestTag.c }
+      }
     }
-    ['plants', 'tasks', 'incubator', 'cemetery', 'log'].forEach(k => {
+    ['plants', 'tasks', 'incubator', 'cemetery', 'log', 'sales'].forEach(k => {
       out[k] = Array.isArray(o[k]) ? o[k] : [];
     });
+    /* Iconos personalizados: se perdían en la restauración; ahora se conservan íntegros */
+    out.icons = Array.isArray(o.icons) ? o.icons : [];
     if (o.inventory && typeof o.inventory === 'object') {
       ['macetas', 'plantas', 'fondos', 'marcos'].forEach(c => {
         out.inventory[c] = Array.isArray(o.inventory[c]) ? o.inventory[c].filter(x => typeof x === 'string') : [];
@@ -3505,6 +4103,7 @@ function admCombos() {
     if (o.counters && typeof o.counters === 'object') {
       if (typeof o.counters.waterTotal === 'number') out.counters.waterTotal = o.counters.waterTotal;
       if (typeof o.counters.promoTotal === 'number') out.counters.promoTotal = o.counters.promoTotal;
+      if (typeof o.counters.legendaryTotal === 'number') out.counters.legendaryTotal = o.counters.legendaryTotal;
     }
     if (o.theme && typeof o.theme === 'object') out.theme = Object.assign(freshState().theme, o.theme);
     out.v = 5;
@@ -3635,6 +4234,10 @@ function admCombos() {
     admResetInc,
     admColor,
     admColorReset,
+    admPaletteAdd,
+    admPaletteColor,
+    admPaletteName,
+    admPaletteDel,
     admFont,
     admText,
     admUploadFont,
@@ -3660,10 +4263,16 @@ function admCombos() {
     delSub,
     addSympt,
     renameSympt,
+    editSympt,
+    setSymptName,
+    setSymptColor,
     delSympt,
     cycleSymptColor,
     addTag,
     renameTag,
+    editTag,
+    setTagName,
+    setTagColor,
     delTag,
     cycleTagColor,
     cardTap,
@@ -3673,7 +4282,21 @@ function admCombos() {
     enterSel,
     exitSel,
     selectAllVisible,
-    batch
+    batch,
+    batchLocation,
+    downloadPhoto,
+    viewPhoto,
+    addPest,
+    recoverPest,
+    renamePestTag,
+    cyclePestTagColor,
+    setVentaTab,
+    setVentaSort,
+    setSalePrice,
+    sellPlant,
+    confirmSell,
+    openSaleDetail,
+    removeSale
   };
   let undoStack = [];
 
@@ -3718,7 +4341,7 @@ function admCombos() {
     refreshUndo();
     toast("Acción deshecha")
   }
-  ['water', 'setWater', 'fert', 'setFert', 'transplant', 'setTransplant', 'cleanPlant', 'setClean', 'review', 'unreview', 'toggleFlower', 'toggleTag', 'toggleSympt', 'toggleSymptAt', 'toggleSale', 'setSubstrate', 'setPhase', 'savePlant', 'confirmKill', 'deletePlant', 'promote', 'setPlantIcon', 'uploadIcon', 'delIcon', 'toggleFav', 'addPhoto', 'removePhoto', 'incPhoto', 'incRemovePhoto', 'setIncSub', 'batch', 'waterAll', 'reviewAll'].forEach(function(nm) {
+  ['water', 'setWater', 'fert', 'setFert', 'transplant', 'setTransplant', 'cleanPlant', 'setClean', 'review', 'unreview', 'toggleFlower', 'toggleTag', 'toggleSympt', 'toggleSymptAt', 'toggleSale', 'setSubstrate', 'setPhase', 'savePlant', 'confirmKill', 'deletePlant', 'promote', 'setPlantIcon', 'uploadIcon', 'delIcon', 'toggleFav', 'addPhoto', 'removePhoto', 'incPhoto', 'incRemovePhoto', 'setIncSub', 'batch', 'waterAll', 'reviewAll', 'addPest', 'recoverPest', 'setSalePrice', 'confirmSell', 'removeSale'].forEach(function(nm) {
     var o = J[nm];
     if (typeof o === 'function') J[nm] = function() {
       pushUndo();
