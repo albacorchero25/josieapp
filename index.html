@@ -3280,11 +3280,11 @@ function scrVentas() {
     <div class="card hero-card"><div class="lead-label" style="margin:0 0 8px">Dinero ganado con ventas</div><div style="font-weight:800;font-size:22px;letter-spacing:-.6px">${fmtPrice(dineroGanado)}</div><div class="mini" style="margin-top:4px">Total histórico de todas las ventas</div></div>
     <div class="card hero-card" style="background:rgba(107,168,140,.12);border-color:rgba(107,168,140,.3)"><div class="lead-label" style="margin:0 0 8px;color:var(--good)">Ganancias de este mes</div><div style="font-weight:800;font-size:22px;letter-spacing:-.6px;color:var(--good)">${fmtPrice(gananciasMes)}</div><div class="mini" style="margin-top:4px">Ventas de este mes</div></div>
   </div>
-  <div class="grid2" style="margin-bottom:${sinCoste?'6':'13'}px">
+  <div class="grid2" style="margin-bottom:13px">
     <div class="card hero-card"><div class="lead-label" style="margin:0 0 8px">Beneficio real</div><div style="font-weight:800;font-size:22px;letter-spacing:-.6px">${fmtPrice(beneficioReal)}</div><div class="mini" style="margin-top:4px">Precio de venta − coste de compra</div></div>
     <div class="card hero-card"><div class="lead-label" style="margin:0 0 8px">Dinero invertido en gastos</div><div style="font-weight:800;font-size:22px;letter-spacing:-.6px">${fmtPrice(invertidoGastos)}</div><div class="mini" style="margin-top:4px">Plantas + gastos generales</div></div>
   </div>
-  ${sinCoste?`<div class="mini" style="margin:0 2px 13px">${sinCoste} venta${sinCoste===1?'':'s'} sin coste de compra registrado: en el beneficio real no se descuenta nada por ${sinCoste===1?'ella':'ellas'}.</div>`:''}
+  ${sinCoste?`<div class="card" style="margin-bottom:13px;cursor:pointer;background:rgba(201,154,92,.13);border-color:rgba(201,154,92,.5)" onclick="J.setVentaTab('vendidas')"><div style="display:flex;gap:10px;align-items:center"><span style="color:var(--warn);flex:none">${ic('alert',22)}</span><div class="mini" style="color:var(--ink)"><b>${sinCoste} venta${sinCoste===1?'':'s'} sin coste de compra.</b> Toca para ir a Memoria, abre ${sinCoste===1?'la planta':'cada planta'} y escribe cuánto costó. Hasta entonces el beneficio real no descuenta nada por ${sinCoste===1?'ella':'ellas'}.</div></div></div>`:''}
   <div class="grid2" style="margin-bottom:13px">
     ${tile('En venta',activas.length,"J.setVentaTab('activas')",activas.length?'disponibles':'ninguna ahora','')}
     ${tile('Vendidas',vendidas.length,"J.setVentaTab('vendidas')",vendidas.length?'en Memoria':'aún ninguna','good')}</div>
@@ -3320,7 +3320,7 @@ function ventaVendidasBody(vendidas, total) {
 }
 
 function soldCard(s) {
-  return `<div class="sold" onclick="J.openSaleDetail('${s.id}')"><div class="badge">${ic('bag',16)}</div><div class="pic">${iconHTML({iconId:s.iconId||'base',stage:s.stage},56)}</div><div class="nm">${esc(s.name||'Sin nombre')}</div><div class="dt">${fmtDate(s.dateSold)}</div><div class="price">${fmtPrice(s.price)}</div></div>`
+  return `<div class="sold" onclick="J.openSaleDetail('${s.id}')"><div class="badge">${ic('bag',16)}</div><div class="pic">${iconHTML({iconId:s.iconId||'base',stage:s.stage},56)}</div><div class="nm">${esc(s.name||'Sin nombre')}</div><div class="dt">${fmtDate(s.dateSold)}</div><div class="price">${fmtPrice(s.price)}</div>${s.cost==null?'<div class="mini" style="color:var(--warn);font-weight:700;margin-top:3px">Sin coste</div>':''}</div>`
 }
 
 function salesChart(vendidas) {
@@ -3617,11 +3617,21 @@ function openSaleDetail(id) {
   <h3 style="text-align:center">${esc(s.name||'Sin nombre')}</h3>
   <div style="text-align:center;margin:-10px 0 16px"><span class="statpill good">${ic('bag',12)} Vendida por ${fmtPrice(s.price)}</span></div>
   <div class="grid2">${(function(l,v){return `<div class="field"><label>${l}</label><div class="val">${v||'—'}</div></div>`})('Precio final',fmtPrice(s.price))}<div class="field"><label>Fecha de venta</label><input type="date" class="inp" value="${s.dateSold||''}" onchange="J.setSaleDate('${id}',this.value)"></div></div>
-  <div class="grid2">${fieldVal('Coste de adquisición',s.cost!=null?fmtPrice(s.cost):'Sin registrar')}${fieldVal('Beneficio real',s.cost!=null?fmtPrice((s.price||0)-s.cost):'No calculable')}</div>
+  <div class="grid2"><div class="field"><label>Coste de adquisición (€)</label><input type="number" min="0" step="0.01" class="inp" value="${s.cost!=null?s.cost:''}" placeholder="Sin registrar" onchange="J.setSaleCost('${id}',this.value)"></div>${fieldVal('Beneficio real',s.cost!=null?fmtPrice((s.price||0)-s.cost):'Escribe el coste')}</div>
   <div class="grid2">${(function(l,v){return `<div class="field"><label>${l}</label><div class="val">${v||'—'}</div></div>`})('Ubicación',esc(s.location))}${(function(l,v){return `<div class="field"><label>${l}</label><div class="val">${v||'—'}</div></div>`})('Adquisición',fmtDate(s.acquired))}</div>
   ${s.notes?`<div class="field"><label>Notas</label><div class="val" style="font-weight:500">${esc(s.notes)}</div></div>`:''}
   ${photos.length?`<div class="field"><label>Fotografías</label><div class="photo-grid">${photos.map(ph=>`<div class="photo-thumb"><img src="${ph.src}"><div class="photo-thumb-dt">${fmtDateTime(ph.ts)}</div></div>`).join('')}</div></div>`:''}
   <button class="btn btn-ghost btn-block" style="margin-top:6px;color:var(--bad)" onclick="J.removeSale('${id}')">${ic('trash',16)} Eliminar del historial</button>`)
+}
+
+function setSaleCost(id, v) {
+  const s = (state.sales || []).find(x => x.id === id);
+  if (!s) return;
+  const n = parseFloat(v);
+  s.cost = (v === '' || !isFinite(n) || n < 0) ? null : n;
+  save();
+  toast(s.cost == null ? "Coste borrado" : "Coste guardado");
+  openSaleDetail(id)
 }
 
 function setSaleDate(id, v) {
@@ -5364,6 +5374,7 @@ function admCombos() {
     openSaleDetail,
     removeSale,
     setSaleDate,
+    setSaleCost,
     enterGarden,
     openCreateGarden,
     confirmCreateGarden,
@@ -5438,7 +5449,7 @@ function admCombos() {
     refreshUndo();
     toast("Acción deshecha")
   }
-  ['water', 'setWater', 'fert', 'setFert', 'transplant', 'setTransplant', 'cleanPlant', 'setClean', 'review', 'unreview', 'toggleFlower', 'toggleTag', 'toggleSympt', 'toggleSymptAt', 'toggleSale', 'setSubstrate', 'setPhase', 'savePlant', 'confirmKill', 'deletePlant', 'promote', 'setPlantIcon', 'uploadIcon', 'delIcon', 'toggleFav', 'addPhoto', 'removePhoto', 'incPhoto', 'incRemovePhoto', 'setIncSub', 'setIncProgress', 'savePurchaseNew', 'confirmUsePurchase', 'confirmBuyPurchase', 'savePurchaseEdit', 'setPurchaseIcon', 'removePurchaseIcon', 'deletePurchase', 'batch', 'waterAll', 'reviewAll', 'addPest', 'recoverPest', 'setSalePrice', 'setPlantCost', 'addExpense', 'delExpense', 'confirmSell', 'removeSale', 'setSaleDate'].forEach(function(nm) {
+  ['water', 'setWater', 'fert', 'setFert', 'transplant', 'setTransplant', 'cleanPlant', 'setClean', 'review', 'unreview', 'toggleFlower', 'toggleTag', 'toggleSympt', 'toggleSymptAt', 'toggleSale', 'setSubstrate', 'setPhase', 'savePlant', 'confirmKill', 'deletePlant', 'promote', 'setPlantIcon', 'uploadIcon', 'delIcon', 'toggleFav', 'addPhoto', 'removePhoto', 'incPhoto', 'incRemovePhoto', 'setIncSub', 'setIncProgress', 'savePurchaseNew', 'confirmUsePurchase', 'confirmBuyPurchase', 'savePurchaseEdit', 'setPurchaseIcon', 'removePurchaseIcon', 'deletePurchase', 'batch', 'waterAll', 'reviewAll', 'addPest', 'recoverPest', 'setSalePrice', 'setPlantCost', 'addExpense', 'delExpense', 'confirmSell', 'removeSale', 'setSaleDate', 'setSaleCost'].forEach(function(nm) {
     var o = J[nm];
     if (typeof o === 'function') J[nm] = function() {
       pushUndo();
